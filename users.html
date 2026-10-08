@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+  <title>Users — Sit Cover Admin</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/shop-logo.webp" type="image/webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" media="print" onload="this.media=&#39;all&#39;">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"></noscript>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-nav="users">
+  <div id="preloader">
+    <div class="pre-card">
+      <img src="assets/shop-logo.webp" alt="logo">
+      <div class="pre-name">Sit Cover Admin</div>
+      <div class="pre-sub">Users</div>
+      <div class="pre-bar"><i></i></div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="adminSide"></aside>
+
+  <div class="main">
+    <header class="top" id="adminTop"></header>
+
+    <div class="wrap-a">
+      <div class="login-err" id="bootErr"></div>
+
+      <div class="page-head">
+        <div>
+          <h2>Users</h2>
+          <div class="sub">People who signed in with Google on the website</div>
+        </div>
+        <div class="sub" id="uCount">Connecting…</div>
+      </div>
+
+      <div class="cards">
+        <div class="stat"><div class="se">👥</div><div class="sv" id="uTotal">—</div><div class="sl">Total users</div><div class="ss">Google sign-ins</div></div>
+        <div class="stat"><div class="se">🖼️</div><div class="sv" id="uWithPhoto">—</div><div class="sl">With photo</div><div class="ss">profile picture set</div></div>
+        <div class="stat"><div class="se">📞</div><div class="sv" id="uWithPhone">—</div><div class="sl">With phone</div><div class="ss">contact number saved</div></div>
+        <div class="stat"><div class="se">🗓️</div><div class="sv" id="uNew7">—</div><div class="sl">Last 7 days</div><div class="ss">new sign-ins</div></div>
+      </div>
+
+      <div class="card">
+        <div class="u-tools">
+          <input class="u-search" id="uSearch" type="search" placeholder="Search by name, email or phone…" aria-label="Search users" autocomplete="off">
+          <span class="u-hint" id="uShown"></span>
+        </div>
+        <div id="uList"><div class="empty-box"><div class="big">👥</div><b>Loading users…</b>Waiting for the shop database.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/users.js"></script>
+</body>
+</html>

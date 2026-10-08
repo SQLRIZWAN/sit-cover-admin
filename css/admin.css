@@ -951,3 +951,110 @@ img.mini {
 .tbl td:last-child { background: #fff; box-shadow: -12px 0 14px -14px rgba(15, 23, 42, .5); }
 .tbl tr:hover td:last-child { background: #fafbfd; }
 .tbl-wrap { -webkit-overflow-scrolling: touch; }
+
+/* ------------------------------------------------------------------ *
+ * Registered users (Google sign-ins)
+ * ------------------------------------------------------------------ */
+a.stat.stat-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+a.stat.stat-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  box-shadow: 0 16px 32px -20px rgba(15, 23, 42, .55);
+}
+a.stat.stat-link .ss::after { content: " →"; }
+
+.u-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.u-search {
+  flex: 1 1 240px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #f8fafc;
+  font-size: 14px;
+}
+.u-search:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245, 158, 11, .16); background: #fff; }
+.u-hint { font-size: 12.5px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+.ulist { display: flex; flex-direction: column; gap: 11px; }
+
+.ucard {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  transition: border-color .13s, box-shadow .13s;
+}
+.ucard:hover { border-color: #d8dee9; box-shadow: 0 12px 26px -22px rgba(15, 23, 42, .55); }
+
+.uc-av { flex: none; }
+.uc-av img, .uc-av .uc-ph, .uc-av .img-fb {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+  color: var(--navy);
+  font-weight: 900;
+  font-size: 20px;
+  border: 2px solid var(--gold);
+}
+
+.uc-main { flex: 1 1 auto; min-width: 0; }
+.uc-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.uc-top > b { font-size: 15px; font-weight: 900; color: var(--navy); overflow-wrap: anywhere; }
+.badge.google { background: #fee2e2; color: #b91c1c; }
+.uc-mail { font-size: 13.4px; overflow-wrap: anywhere; }
+.uc-mail a { color: var(--info); font-weight: 700; }
+.uc-mail a:hover { text-decoration: underline; }
+.uc-meta { font-size: 12.3px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+.uc-meta .dot { margin: 0 6px; opacity: .55; }
+.uc-info {
+  margin-top: 7px;
+  font-size: 13px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.uc-r { flex: none; display: flex; flex-direction: column; gap: 7px; }
+.uc-r .btn { white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .ucard { flex-wrap: wrap; }
+  .uc-main { flex: 1 1 calc(100% - 65px); }
+  .uc-r { flex: 1 1 100%; flex-direction: row; }
+  .uc-r .btn { flex: 1 1 auto; text-align: center; justify-content: center; }
+}
+
+/* Letter tile shown when a profile picture fails to load */
+.img-fb {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+  color: var(--navy);
+  font-weight: 900;
+  line-height: 1;
+  font-size: 19px;
+  text-transform: uppercase;
+  border-radius: 50%;
+}

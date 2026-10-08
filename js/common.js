@@ -410,6 +410,7 @@
       '<nav class="bnav" id="bottomNav">' +
         '<a data-nav="dashboard" href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Home</span></a>' +
         '<a data-nav="orders" href="orders.html"><svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span>Orders</span><span class="pill hide" id="navOrdersB">0</span></a>' +
+        '<a data-nav="users" href="users.html"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.9 19.5a6.1 6.1 0 0 1 12.2 0"/><path d="M16.4 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.2a6.1 6.1 0 0 1 3.5 5.3"/></svg><span>Users</span><span class="pill hide" id="navUsersB">0</span></a>' +
         '<a data-nav="reports" href="reports.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="M8 16v-4M12 16V8M16 16v-6M20 16V3"/></svg><span>Reports</span></a>' +
         '<a data-nav="customer-reports" href="customer-reports.html"><span>📝</span><span>Customer Reports</span></a>' +
         '<a data-nav="products-all" href="products.html"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg><span>Products</span></a>' +
@@ -427,6 +428,7 @@
       '<nav>' +
         '<a class="nav-i" data-nav="dashboard" href="index.html"><span class="ic">📊</span> Dashboard</a>' +
         '<a class="nav-i" data-nav="orders" href="orders.html"><span class="ic">🧾</span> Orders <span class="pill hide" id="navOrders">0</span></a>' +
+        '<a class="nav-i" data-nav="users" href="users.html"><span class="ic">👥</span> Users <span class="pill hide" id="navUsers">0</span></a>' +
         '<a class="nav-i" data-nav="reports" href="reports.html"><span class="ic">📈</span> Reports</a>' +
         '<a class="nav-i" data-nav="customer-reports" href="customer-reports.html"><span class="ic">📝</span> Customer Reports</a>' +
         '<a class="nav-i" data-nav="categories" href="categories.html"><span class="ic">🗂️</span> Categories</a>' +
@@ -448,6 +450,23 @@
       '</div>';
   }
 
+  // Avatar URLs can disappear or be blocked — fall back to a letter tile.
+  var imgFallbackBound = false;
+  function bindImgFallback() {
+    if (imgFallbackBound) return;
+    imgFallbackBound = true;
+    document.addEventListener('error', function (e) {
+      var img = e.target;
+      if (!img || img.tagName !== 'IMG' || !img.hasAttribute('data-fb')) return;
+      if (!img.parentNode) return;
+      var span = document.createElement('span');
+      span.className = (img.className || '') + ' img-fb';
+      span.setAttribute('aria-hidden', 'true');
+      span.textContent = img.getAttribute('data-fb') || '?';
+      img.parentNode.replaceChild(span, img);
+    }, true);
+  }
+
   function pageTitle(t) {
     var t1 = $('#topTitle');
     if (t1) t1.textContent = t;
@@ -458,6 +477,7 @@
   var NAV_TITLE = {
     dashboard: 'Dashboard',
     orders: 'Orders',
+    users: 'Users',
     reports: 'Reports',
     'customer-reports': 'Customer Reports',
     categories: 'Categories',
@@ -501,6 +521,7 @@
     var top = $('#adminTop');
     if (top) top.innerHTML = topHTML();
 
+    bindImgFallback();
     markActive();
     pageTitle(navTitle());
 
@@ -605,6 +626,18 @@
     DB.ref('orders').orderByChild('status').equalTo('new').on('value', function (s) {
       var n = s.numChildren();
       ['#navOrders', '#navOrdersB'].forEach(function (sel) {
+        var p = $(sel);
+        if (p) {
+          p.textContent = n;
+          p.classList.toggle('hide', n === 0);
+        }
+      });
+    });
+
+    // Registered website users (Google sign-ins) — shown as a nav badge.
+    DB.ref('stats/users').on('value', function (s) {
+      var n = s.numChildren();
+      ['#navUsers', '#navUsersB'].forEach(function (sel) {
         var p = $(sel);
         if (p) {
           p.textContent = n;

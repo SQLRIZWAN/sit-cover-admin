@@ -77,6 +77,11 @@
       document.getElementById('stUsers').textContent = s.numChildren();
     });
 
+    DB.ref('stats/users').on('value', function (s) {
+      var m = document.getElementById('stMembers');
+      if (m) m.textContent = s.numChildren();
+    });
+
     DB.ref('stats/visitors').on('value', function (s) {
       visitorSnap = {};
       s.forEach(function (ch) { visitorSnap[ch.key] = ch.val(); });
