@@ -147,6 +147,42 @@
     return (p && p.media && p.media.length) ? p.media[0] : null;
   };
 
+  /* ------------------------------------------------------------------ *
+   * Icons — emoji text, an Iconify "prefix:name" code, or an uploaded URL.
+   * ------------------------------------------------------------------ */
+  App.iconKind = function (v) {
+    var s = String(v == null ? '' : v).trim();
+    if (!s) return 'none';
+    if (/^(https?:|data:image|assets\/|\/)/i.test(s)) return 'url';
+    if (/^[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9-]+$/i.test(s)) return 'iconify';
+    return 'emoji';
+  };
+
+  App.iconSrc = function (v) {
+    var s = String(v == null ? '' : v).trim();
+    if (!s) return '';
+    if (/^(https?:|data:image|assets\/|\/)/i.test(s)) return s;
+    var i = s.indexOf(':');
+    if (i < 1) return '';
+    var prefix = s.slice(0, i).toLowerCase();
+    var name = s.slice(i + 1).toLowerCase();
+    return 'https://api.iconify.design/' + prefix + '/' + name + '.svg?color=%23111827';
+  };
+
+  App.iconHTML = function (v, cls) {
+    var k = App.iconKind(v);
+    cls = cls ? ' ' + cls : '';
+    if (k === 'none') return '<span class="ico ico-emoji' + cls + '" aria-hidden="true">🛍️</span>';
+    if (k === 'url') {
+      return '<span class="ico ico-box' + cls + '"><img class="ico-img" src="' + App.esc(App.iconSrc(v)) + '" alt="" loading="lazy"></span>';
+    }
+    if (k === 'iconify') {
+      return '<span class="ico ico-box' + cls + '"><img class="ico-img" src="' + App.esc(App.iconSrc(v)) + '" alt="" loading="lazy"></span>';
+    }
+    return '<span class="ico ico-emoji' + cls + '" aria-hidden="true">' + App.esc(v) + '</span>';
+  };
+
+
   function readDataURL(file) {
     return new Promise(function (resolve, reject) {
       var fr = new FileReader();
@@ -325,8 +361,48 @@
     return 'https://wa.me/' + n + '?text=' + encodeURIComponent(text);
   };
 
+  // Same receipt the website sends, so a forwarded order reads identically.
+  App.buildWaMessage = function (o, cfg) {
+    cfg = cfg || {};
+    var c = o.customer || {};
+    var L = [];
+    var rule = '─────────────────';
+    L.push('*' + (cfg.shopName || 'New Order') + '*');
+    L.push('Order: #' + String(o.id || '').slice(-8).toUpperCase());
+    L.push(rule);
+    L.push('*Items*');
+    (o.items || []).forEach(function (it, i) {
+      L.push((i + 1) + '. ' + it.name);
+      L.push('   ' + Number(it.qty || 1) + ' × ' + App.fmtKD(Number(it.price) || 0) +
+        ' = ' + App.fmtKD(Number(it.price) * Number(it.qty)));
+    });
+    L.push(rule);
+    L.push('Subtotal: ' + App.fmtKD(o.subtotal));
+    L.push('Delivery' + (o.distanceKm != null ? ' (' + Number(o.distanceKm).toFixed(1) + ' km)' : '') +
+      ': ' + App.fmtKD(o.deliveryFee));
+    L.push('*Total: ' + App.fmtKD(o.total) + '*');
+    L.push('');
+    L.push('*Customer*');
+    L.push('Name: ' + (c.name || '—'));
+    L.push('Phone: ' + (c.phone || '—'));
+    L.push('Address: ' + (c.address || 'not specified'));
+    if (c.lat != null && c.lng != null) {
+      L.push('Map: https://maps.google.com/?q=' + c.lat + ',' + c.lng);
+    }
+    L.push('');
+    L.push('Payment: ' + (o.paymentMethod === 'wamd' ? 'WAMD (prepaid)' : 'Cash on Delivery'));
+    if (o.paymentScreenshot) {
+      L.push('Screenshot: uploaded — open the order in the admin panel.');
+    }
+    L.push(rule);
+    L.push('Sent from ' + (cfg.shopName || 'the shop') + ' admin panel');
+    return L.join('\n');
+  };
+
   App.orderStatus = function (o) {
-    return o && o.status ? o.status : 'new';
+    var s = (o && o.status) ? String(o.status) : '';
+    if (!s || s === 'pending' || s === 'awaiting') return 'new';
+    return s;
   };
 
   function bottomNavHTML() {
@@ -379,6 +455,24 @@
   }
   App.pageTitle = pageTitle;
 
+  var NAV_TITLE = {
+    dashboard: 'Dashboard',
+    orders: 'Orders',
+    reports: 'Reports',
+    'customer-reports': 'Customer Reports',
+    categories: 'Categories',
+    settings: 'Settings',
+    'products-all': 'Products'
+  };
+
+  function navTitle() {
+    var nav = document.body.getAttribute('data-nav') || '';
+    if (NAV_TITLE[nav]) return NAV_TITLE[nav];
+    if (nav.indexOf('products-') === 0) return 'Products';
+    return 'Dashboard';
+  }
+  App.navTitle = navTitle;
+
   function markActive() {
     var nav = document.body.getAttribute('data-nav') || '';
     $$('.nav-i, .bnav a').forEach(function (a) {
@@ -393,7 +487,7 @@
     var cats = App.catList(true);
     box.innerHTML = cats.map(function (c) {
       return '<a class="nav-i nav-sub" data-nav="products-' + App.esc(c.id) + '" href="products.html?cat=' + encodeURIComponent(c.id) + '">' +
-        '<span class="ic">' + App.esc(c.icon || '📁') + '</span> ' + App.esc(c.name) + '</a>';
+        '<span class="ic">' + (c.icon ? App.iconHTML(c.icon) : '📁') + '</span> ' + App.esc(c.name) + '</a>';
     }).join('');
     markActive();
   }
@@ -408,6 +502,7 @@
     if (top) top.innerHTML = topHTML();
 
     markActive();
+    pageTitle(navTitle());
 
     var mm = $('#mMenu');
     if (mm) mm.addEventListener('click', function () {

@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Products — Sit Cover Admin</title>
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/shop-logo.webp" type="image/webp">
-  <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" media="print" onload="this.media=&#39;all&#39;">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"></noscript>
+<link rel="stylesheet" href="css/admin.css">
 </head>
 <body data-nav="products-all">
   <div id="preloader">
@@ -81,7 +86,7 @@
       </div>
 
       <div class="field">
-        <label>Photos &amp; videos (first one becomes the cover — up to 6)</label>
+        <div class="mlabel">Photos &amp; videos — slot <b>MAIN</b> is shown first, slots 2–6 follow (6 total)</div>
         <div class="drop" id="pfDrop">
           <b>⬆️ Tap to upload or drag &amp; drop</b>
           Photos (JPG/PNG/WEBP) — auto-compressed. Videos (MP4/WEBM) max 2.5 MB

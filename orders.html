@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Orders — Sit Cover Admin</title>
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/shop-logo.webp" type="image/webp">
-  <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" media="print" onload="this.media=&#39;all&#39;">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"></noscript>
+<link rel="stylesheet" href="css/admin.css">
 </head>
 <body data-nav="orders">
   <div id="preloader">
@@ -37,7 +42,7 @@
 
       <div class="ochips" id="statusChips">
         <button class="chip on" data-st="all">All</button>
-        <button class="chip" data-st="new">🆕 New</button>
+        <button class="chip" data-st="new">⏳ Pending</button>
         <button class="chip" data-st="confirmed">✅ Confirmed</button>
         <button class="chip" data-st="delivered">📦 Completed</button>
         <button class="chip" data-st="cancelled">❌ Cancelled</button>

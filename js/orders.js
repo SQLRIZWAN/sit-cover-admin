@@ -8,11 +8,18 @@
   function el(id) { return document.getElementById(id); }
 
   var STATUS_LABEL = {
-    new: '🆕 New',
+    new: '⏳ Pending',
     confirmed: '✅ Confirmed',
     delivered: '📦 Completed',
     cancelled: '❌ Cancelled'
   };
+
+  // Screenshot data URLs live in their own node — fetch them once so every
+  // order card can show a small payment-proof thumbnail.
+  var shots = {};
+  function shotUrl(o) {
+    return (o && o.paymentScreenshot) ? (shots[o.id] || '') : '';
+  }
 
   function shortId(o) { return '#' + String(o.id || '').slice(-8).toUpperCase(); }
 
@@ -42,20 +49,33 @@
     el('oList').innerHTML = '<div class="olist">' + list.map(function (o) {
       var st = App.orderStatus(o);
       var cust = o.customer || {};
+      var items = o.items || [];
+      var qty = items.reduce(function (s, i) { return s + Number(i.qty || 1); }, 0);
+      var shot = shotUrl(o);
       return '<div class="ocard" data-id="' + App.esc(o.id) + '">' +
         '<div class="oc-main">' +
           '<div class="oc-l">' +
-            '<b>' + shortId(o) + '</b> <span class="badge ' + App.esc(st) + '">' + App.esc(STATUS_LABEL[st] || st) + '</span>' +
-            '<div class="oc-cust">' + App.esc(cust.name || 'Customer') + ' · ' + App.esc(cust.phone || '') + '</div>' +
+            '<div class="oc-top">' +
+              '<b>' + shortId(o) + '</b> ' +
+              '<span class="badge ' + App.esc(st) + '">' + App.esc(STATUS_LABEL[st] || st) + '</span>' +
+              (o.whatsappSent ? '<span class="badge wa">💬 WhatsApp</span>' : '') +
+            '</div>' +
+            '<div class="oc-cust">' + App.esc(cust.name || 'Customer') + ' · ' + App.esc(cust.phone || '—') + '</div>' +
+            (cust.address ? '<div class="oc-addr">📍 ' + App.esc(cust.address) + '</div>' : '') +
             '<div class="oc-items">' + App.esc(itemSummary(o)) + '</div>' +
-            '<div class="oc-meta">' + App.fmtDate(o.createdAt) + ' · ' +
-              (o.paymentMethod === 'wamd' ? '📲 WAMD' : '💵 COD') +
+            '<div class="oc-meta">' + App.fmtDate(o.createdAt) + ' · ' + items.length +
+              (items.length === 1 ? ' item' : ' items') + ' · ' + qty + ' pc' +
+              ' · ' + (o.paymentMethod === 'wamd' ? '📲 WAMD' : '💵 COD') +
               (o.distanceKm != null ? ' · ' + Number(o.distanceKm).toFixed(1) + ' km' : '') +
-              (o.whatsappSent ? ' · 🟢 WhatsApp sent' : '') +
             '</div>' +
           '</div>' +
           '<div class="oc-r">' +
             '<div class="oc-total">' + App.fmtKD(o.total) + '</div>' +
+            (o.paymentScreenshot
+              ? '<div class="oc-shot" data-shot="' + App.esc(o.id) + '" title="Payment screenshot">' +
+                  (shot ? '<img src="' + App.esc(shot) + '" alt="payment screenshot">' : '<span>📸</span>') +
+                '</div>'
+              : '') +
             '<button class="btn btn-ghost btn-sm oc-open">View ▸</button>' +
           '</div>' +
         '</div>' +
@@ -100,7 +120,8 @@
 
     var shot = o.paymentScreenshot
       ? '<div class="field"><label>Payment screenshot</label><div id="shotBox"><div class="empty-box" style="padding:14px"><b>Loading screenshot…</b></div></div></div>'
-      : '';
+      : '<div class="field"><label>Payment screenshot</label><div class="val muted-v">Not uploaded — ' +
+        (o.paymentMethod === 'wamd' ? 'WAMD payment without proof' : 'Cash on Delivery') + '</div></div>';
 
     el('omBody').innerHTML =
       '<div class="row2">' +
@@ -108,7 +129,8 @@
         '<div class="field"><label>Payment</label><div class="val">' +
           (o.paymentMethod === 'wamd' ? '📲 WAMD (prepaid)' : '💵 Cash on Delivery') + '</div></div>' +
       '</div>' +
-      '<div class="field"><label>Items</label>' +
+      '<div class="field"><label>Items (' + (o.items || []).length + ' product' +
+        ((o.items || []).length === 1 ? '' : 's') + ')</label>' +
         '<div class="tbl-wrap"><table class="tbl">' + items + '</table></div></div>' +
       '<div class="row2">' +
         '<div class="field"><label>Subtotal</label><div class="val">' + App.fmtKD(o.subtotal) + '</div></div>' +
@@ -119,10 +141,16 @@
       '<div class="field"><label>Total</label><div class="val big-v">' + App.fmtKD(o.total) + '</div></div>' +
       '<div class="row2">' +
         '<div class="field"><label>Customer</label><div class="val">' +
-          App.esc(cust.name || '—') + '<br>' + App.esc(cust.phone || '') + '</div></div>' +
+          App.esc(cust.name || '—') + '<br>' + App.esc(cust.phone || '—') + '</div></div>' +
         '<div class="field"><label>Address</label><div class="val">' + App.esc(cust.address || 'not specified') +
           (mapUrl ? '<br><a href="' + mapUrl + '" target="_blank" rel="noopener">📍 Open in Google Maps</a>' : '') +
         '</div></div>' +
+      '</div>' +
+      '<div class="row2">' +
+        '<div class="field"><label>Status</label><div class="val">' +
+          '<span class="badge ' + App.esc(st) + '">' + App.esc(STATUS_LABEL[st] || st) + '</span></div></div>' +
+        '<div class="field"><label>WhatsApp hand-off</label><div class="val">' +
+          (o.whatsappSent ? '🟢 Sent to shop chat' : '⚪ Not sent yet') + '</div></div>' +
       '</div>' + shot;
 
     var shopWaText = '';
@@ -156,6 +184,11 @@
     if (o.paymentScreenshot) {
       var box = document.getElementById('shotBox');
       if (box) {
+        var cached = shots[o.id];
+        if (cached) {
+          box.innerHTML = '<a href="' + App.esc(cached) + '" target="_blank" rel="noopener">' +
+            '<img class="shot" src="' + App.esc(cached) + '" alt="payment screenshot"></a>';
+        } else {
         App.DB.ref('order_shots/' + o.id).once('value').then(function (s) {
           var d = s.val();
           if (d && typeof d === 'string') {
@@ -167,6 +200,7 @@
         }).catch(function () {
           box.innerHTML = '<div class="empty-box" style="padding:14px"><b>Could not load screenshot</b></div>';
         });
+        }
       }
     }
   }
@@ -213,6 +247,10 @@
 
   App.onAuth(function () {
     var DB = App.DB;
+    DB.ref('order_shots').limitToLast(60).on('value', function (s) {
+      shots = s.val() || {};
+      render();
+    });
     DB.ref('orders').orderByChild('createdAt').limitToLast(200).on('value', function (s) {
       orders = [];
       s.forEach(function (ch) {

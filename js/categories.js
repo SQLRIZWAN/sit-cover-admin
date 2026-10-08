@@ -39,7 +39,7 @@
       var pc = countProducts(c.id);
       return '<tr data-id="' + App.esc(c.id) + '">' +
         '<td style="width:44px"><b>' + (i + 1) + '</b></td>' +
-        '<td style="width:46px;font-size:20px">' + App.esc(c.icon || '📁') + '</td>' +
+        '<td style="width:46px">' + (c.icon ? App.iconHTML(c.icon) : '<span style="font-size:20px">📁</span>') + '</td>' +
         '<td><b>' + App.esc(c.name) + '</b>' +
           (c.nameAr ? '<br><small style="color:#6b7280" dir="rtl">' + App.esc(c.nameAr) + '</small>' : '') + '</td>' +
         '<td><span class="badge cat">' + pc + ' product' + (pc === 1 ? '' : 's') + '</span></td>' +
@@ -140,6 +140,7 @@
     el('cfIcon').value = c ? (c.icon || '') : '';
     el('cfActive').checked = c ? c.active !== false : true;
     activeTxt();
+    paintIconPreview();
 
     el('mMask').classList.add('on');
     el('cModal').classList.add('on');
@@ -157,6 +158,97 @@
     var t = el('cfActiveTxt');
     t.textContent = on ? 'Active — shown on website' : 'Hidden — not shown on website';
     t.style.color = on ? '#16a34a' : '#dc2626';
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Icon picker — emoji, Iconify code, or an uploaded image.
+   * ------------------------------------------------------------------ */
+  var EMOJIS = ['📺', '🚗', '🛋️', '🪑', '🛏️', '🛁', '🧼', '🧴', '🧹', '🧽',
+    '🗑️', '🔧', '🪛', '🔩', '🛠️', '🧰', '🪣', '🔌', '💡', '🔋',
+    '📦', '🛍️', '🎁', '🏷️', '🛒', '🔑', '🧵', '🧶', '📱', '⌚',
+    '🎧', '💻', '📷', '☂️', '🐾', '🍼'];
+
+  var ICONIFY = ['lucide:tv', 'lucide:car-front', 'lucide:armchair', 'lucide:wrench',
+    'lucide:hammer', 'lucide:bolt', 'lucide:plug', 'lucide:lightbulb',
+    'lucide:package', 'lucide:shopping-bag', 'lucide:gift', 'lucide:trash-2',
+    'lucide:sparkles', 'lucide:star', 'lucide:heart', 'lucide:shield-check',
+    'lucide:shirt', 'lucide:bed-double', 'lucide:bath', 'lucide:settings',
+    'lucide:circle-dot', 'lucide:washing-machine', 'lucide:refrigerator', 'lucide:lamp-desk'];
+
+  function paintIconPreview() {
+    var box = el('ipPrev');
+    if (!box) return;
+    var v = el('cfIcon').value.trim();
+    box.innerHTML = v ? App.iconHTML(v) : '';
+    box.classList.toggle('empty', !v);
+    if (!v) box.textContent = '—';
+    $$('#ipEmoji .ip-b').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-v') === v);
+    });
+    $$('#ipIconify .ip-b').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-v') === v);
+    });
+  }
+
+  function buildIconPicker() {
+    var e = el('ipEmoji');
+    if (e) {
+      e.innerHTML = EMOJIS.map(function (x) {
+        return '<button type="button" class="ip-b" data-v="' + App.esc(x) + '" title="' + App.esc(x) + '">' + App.esc(x) + '</button>';
+      }).join('');
+      e.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-v]');
+        if (!b) return;
+        el('cfIcon').value = b.getAttribute('data-v');
+        paintIconPreview();
+      });
+    }
+
+    var i = el('ipIconify');
+    if (i) {
+      i.innerHTML = ICONIFY.map(function (x) {
+        return '<button type="button" class="ip-b ip-ico" data-v="' + App.esc(x) + '" title="' + App.esc(x) + '">' +
+          App.iconHTML(x) + '</button>';
+      }).join('');
+      i.addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-v]');
+        if (!b) return;
+        el('cfIcon').value = b.getAttribute('data-v');
+        paintIconPreview();
+      });
+    }
+
+    var up = el('cfUpload');
+    if (up) up.addEventListener('click', function () {
+      var f = el('cfIconFile');
+      f.value = '';
+      f.click();
+    });
+
+    var clr = el('cfClear');
+    if (clr) clr.addEventListener('click', function () {
+      el('cfIcon').value = '';
+      paintIconPreview();
+    });
+
+    var file = el('cfIconFile');
+    if (file) file.addEventListener('change', function () {
+      var f = this.files && this.files[0];
+      this.value = '';
+      if (!f) return;
+      if (!/^image\//.test(f.type || '')) { App.toast('Choose an image file', 'err'); return; }
+      App.cloudUpload(f).then(function (m) {
+        if (!m || !m.url) throw new Error('Could not read the image');
+        return App.makeVariant(m.url, 96, 0.85);
+      }).then(function (dataUrl) {
+        if (!dataUrl) throw new Error('Could not compress the image');
+        el('cfIcon').value = dataUrl;
+        paintIconPreview();
+        App.toast('Custom icon ready — press Save', 'ok');
+      }).catch(function (err) {
+        App.toast('Icon failed: ' + (err.message || ''), 'err');
+      });
+    });
   }
 
   function save() {
@@ -202,6 +294,8 @@
   el('mMask').addEventListener('click', closeModal);
   el('mSave').addEventListener('click', save);
   el('cfActive').addEventListener('change', activeTxt);
+  el('cfIcon').addEventListener('input', paintIconPreview);
+  buildIconPicker();
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && el('cModal').classList.contains('on')) closeModal();
   });

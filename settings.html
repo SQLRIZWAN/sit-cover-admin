@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Settings — Sit Cover Admin</title>
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/shop-logo.webp" type="image/webp">
-  <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" media="print" onload="this.media=&#39;all&#39;">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"></noscript>
+<link rel="stylesheet" href="css/admin.css">
 </head>
 <body data-nav="settings">
   <div id="preloader">
@@ -37,6 +42,7 @@
 
       <div class="settings-tabs" id="settingsTabs">
         <button class="chip on" data-tab="shop">🏪 Shop</button>
+        <button class="chip" data-tab="branding">🎨 Branding</button>
         <button class="chip" data-tab="contact">💬 Contact &amp; WAMD</button>
         <button class="chip" data-tab="analytics">📈 Analytics</button>
         <button class="chip" data-tab="location">📍 Delivery</button>
@@ -64,6 +70,68 @@
             <input id="sIg" type="text" maxlength="200">
           </div>
         </div>
+      </div>
+
+      <div class="card" data-setting-tab="branding" hidden>
+        <h3>🎨 Logo, banner &amp; site icon</h3>
+        <div class="tip">Upload once — the website picks the new artwork up immediately, no rebuild needed. Anything you leave as “Default” keeps the current design.</div>
+
+        <div class="brand-grid">
+          <div class="brand-slot" data-slot="logo">
+            <div class="bs-prev bs-logo"><img data-prev="logo" alt="Current logo"></div>
+            <div class="bs-meta">
+              <b>Header &amp; footer logo</b>
+              <small>Square PNG/WEBP with transparent background · compressed to 160 px</small>
+              <div class="bs-acts">
+                <button type="button" class="btn btn-ghost btn-sm" data-pick="logo">📁 Choose image</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-reset="logo" hidden>↺ Use default</button>
+              </div>
+            </div>
+            <span class="bs-state" data-state="logo">Default</span>
+          </div>
+
+          <div class="brand-slot" data-slot="banner">
+            <div class="bs-prev bs-banner"><img data-prev="banner" alt="Current banner"></div>
+            <div class="bs-meta">
+              <b>Home banner</b>
+              <small>Wide image for the top of the home page · compressed to 1400 px</small>
+              <div class="bs-acts">
+                <button type="button" class="btn btn-ghost btn-sm" data-pick="banner">📁 Choose image</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-reset="banner" hidden>↺ Use default</button>
+              </div>
+            </div>
+            <span class="bs-state" data-state="banner">Default</span>
+          </div>
+
+          <div class="brand-slot" data-slot="loading">
+            <div class="bs-prev bs-logo"><img data-prev="loading" alt="Current loading logo"></div>
+            <div class="bs-meta">
+              <b>Loading screen logo</b>
+              <small>Shown while the site opens · compressed to 160 px</small>
+              <div class="bs-acts">
+                <button type="button" class="btn btn-ghost btn-sm" data-pick="loading">📁 Choose image</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-reset="loading" hidden>↺ Use default</button>
+              </div>
+            </div>
+            <span class="bs-state" data-state="loading">Default</span>
+          </div>
+
+          <div class="brand-slot" data-slot="favicon">
+            <div class="bs-prev bs-ico"><img data-prev="favicon" alt="Current site icon"></div>
+            <div class="bs-meta">
+              <b>Browser tab icon</b>
+              <small>Square image · compressed to 64 px</small>
+              <div class="bs-acts">
+                <button type="button" class="btn btn-ghost btn-sm" data-pick="favicon">📁 Choose image</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-reset="favicon" hidden>↺ Use default</button>
+              </div>
+            </div>
+            <span class="bs-state" data-state="favicon">Default</span>
+          </div>
+        </div>
+
+        <div class="tip" id="brandHint">Tip: use a square logo with a transparent background for the cleanest look.</div>
+        <input type="file" id="brandFile" accept="image/*" hidden>
       </div>
 
       <div class="card" data-setting-tab="contact">

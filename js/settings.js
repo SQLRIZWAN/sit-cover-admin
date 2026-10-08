@@ -12,6 +12,64 @@
 
   function el(id) { return document.getElementById(id); }
 
+  /* ------------------------------------------------------------------ *
+   * Branding: logo / banner / loading / favicon live under config.branding
+   * (the `config` node is already world-readable, so no rules change).
+   * ------------------------------------------------------------------ */
+  var SLOTS = {
+    logo:    { max: 160,  q: 0.82, def: 'assets/shop-logo.webp',   label: 'logo' },
+    banner:  { max: 1400, q: 0.6,  def: 'assets/shop-banner.webp', label: 'banner' },
+    loading: { max: 160,  q: 0.82, def: 'assets/shop-logo.webp',   label: 'loading screen' },
+    favicon: { max: 64,   q: 0.85, def: 'assets/shop-logo.webp',   label: 'browser icon' }
+  };
+  var brand = { logo: '', banner: '', loading: '', favicon: '' };
+  var pendingSlot = null;
+
+  function paintBrand(k) {
+    var slot = document.querySelector('.brand-slot[data-slot="' + k + '"]');
+    if (!slot) return;
+    var img = slot.querySelector('[data-prev="' + k + '"]');
+    var st = slot.querySelector('[data-state="' + k + '"]');
+    var rst = slot.querySelector('[data-reset="' + k + '"]');
+    if (img) img.src = brand[k] || SLOTS[k].def;
+    if (st) {
+      st.textContent = brand[k] ? 'Custom ✓' : 'Default';
+      st.classList.toggle('on', !!brand[k]);
+    }
+    if (rst) rst.hidden = !brand[k];
+  }
+
+  function paintBrandAll() { Object.keys(SLOTS).forEach(paintBrand); }
+
+  function readBrand() {
+    var c = App.state.config || {};
+    var b = c.branding || {};
+    Object.keys(SLOTS).forEach(function (k) {
+      brand[k] = typeof b[k] === 'string' ? b[k] : '';
+    });
+    paintBrandAll();
+  }
+
+  function pickBrand(slot, file) {
+    if (!file) return;
+    if (!/^image\//.test(file.type || '')) { App.toast('Choose an image file (JPG, PNG or WEBP)', 'err'); return; }
+    var hint = el('brandHint');
+    if (hint) hint.textContent = 'Processing the ' + SLOTS[slot].label + '…';
+    App.cloudUpload(file).then(function (media) {
+      if (!media || !media.url) throw new Error('Could not read the image');
+      return App.makeVariant(media.url, SLOTS[slot].max, SLOTS[slot].q);
+    }).then(function (dataUrl) {
+      if (!dataUrl) throw new Error('Could not compress the image');
+      brand[slot] = dataUrl;
+      paintBrand(slot);
+      if (hint) hint.textContent = '✓ ' + SLOTS[slot].label + ' ready — press “Save All Settings” to publish it.';
+      App.toast(SLOTS[slot].label + ' updated — remember to save', 'ok');
+    }).catch(function (e) {
+      if (hint) hint.textContent = 'Could not process that image: ' + (e.message || 'try another file');
+      App.toast('Image failed: ' + (e.message || ''), 'err');
+    });
+  }
+
   function activateTab(tab) {
     $$('#settingsTabs [data-tab]').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tab);
@@ -105,6 +163,8 @@
     el('sLng').value = cfg.shopLng != null ? cfg.shopLng : '';
 
     renderTiers(Array.isArray(cfg.deliveryTiers) && cfg.deliveryTiers.length ? cfg.deliveryTiers : defaultTiers);
+
+    readBrand();
   }
 
   function save() {
@@ -135,6 +195,12 @@
     data.shopLat = isFinite(lat) ? lat : 29.2844;
     data.shopLng = isFinite(lng) ? lng : 47.9656;
     data.deliveryTiers = tiers;
+    data.branding = {
+      logo: brand.logo || '',
+      banner: brand.banner || '',
+      loading: brand.loading || '',
+      favicon: brand.favicon || ''
+    };
     data.updatedAt = firebase.database.ServerValue.TIMESTAMP;
 
     var btns = [el('btnSave'), el('btnSave2')];
@@ -156,6 +222,30 @@
   $$('#settingsTabs [data-tab]').forEach(function (b) {
     b.addEventListener('click', function () { activateTab(b.getAttribute('data-tab')); });
   });
+
+  $$('.brand-slot [data-pick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      pendingSlot = b.getAttribute('data-pick');
+      var f = el('brandFile');
+      f.value = '';
+      f.click();
+    });
+  });
+  $$('.brand-slot [data-reset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-reset');
+      brand[k] = '';
+      paintBrand(k);
+      App.toast('Reverted to the default ' + SLOTS[k].label + ' — remember to save', 'ok');
+    });
+  });
+  el('brandFile').addEventListener('change', function () {
+    if (!pendingSlot) return;
+    pickBrand(pendingSlot, this.files && this.files[0]);
+    pendingSlot = null;
+    this.value = '';
+  });
+
   activateTab('shop');
   el('tierAdd').addEventListener('click', function () {
     var tr = document.createElement('tbody');

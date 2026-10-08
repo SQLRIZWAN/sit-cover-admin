@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Categories — Sit Cover Admin</title>
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/shop-logo.webp" type="image/webp">
-  <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" media="print" onload="this.media=&#39;all&#39;">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"></noscript>
+<link rel="stylesheet" href="css/admin.css">
 </head>
 <body data-nav="categories">
   <div id="preloader">
@@ -57,9 +62,33 @@
         <input id="cfNameAr" type="text" maxlength="60" dir="rtl" placeholder="ريموت التلفزيون">
       </div>
       <div class="field">
-        <label for="cfIcon">Icon (one emoji)</label>
-        <input id="cfIcon" type="text" maxlength="4" placeholder="📺">
-        <div class="tip">Optional — shows next to the tab name on the website</div>
+        <label for="cfIcon">Icon</label>
+        <input id="cfIcon" type="text" maxlength="300" placeholder="📺" autocomplete="off">
+        <div class="tip">Pick an emoji below, an icon code (e.g. <b>lucide:tv</b>), or upload your own image. Leave empty to show no icon.</div>
+
+        <div class="icon-picker" id="iconPicker">
+          <div class="ip-sec">
+            <span class="ip-lab">Emoji</span>
+            <div class="ip-grid" id="ipEmoji"></div>
+          </div>
+          <div class="ip-sec">
+            <span class="ip-lab">Icon library</span>
+            <div class="ip-grid" id="ipIconify"></div>
+          </div>
+          <div class="ip-sec">
+            <span class="ip-lab">Your own</span>
+            <div class="ip-grid ip-acts">
+              <button type="button" class="btn btn-ghost btn-sm" id="cfUpload">📁 Upload image</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="cfClear">✕ Clear icon</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ip-preview">
+          <span class="ip-prev" id="ipPrev">🛍️</span>
+          <span class="ip-cap">Preview — the website tab looks like this</span>
+        </div>
+        <input type="file" id="cfIconFile" accept="image/*" hidden>
       </div>
       <div class="field">
         <label>Active (visible as a website tab)</label>

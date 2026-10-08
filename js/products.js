@@ -9,6 +9,7 @@
   var editingId = null;
   var mediaItems = [];
   var mediaLoading = false;
+  var replaceIndex = null;
   var MAX_MEDIA = 6;
   var MAX_MEDIA_BYTES = 7000000;
 
@@ -200,6 +201,7 @@
 
     mediaItems = [];
     mediaLoading = false;
+    replaceIndex = null;
     if (p && p.media && p.media.length) {
       mediaItems = p.media.map(function (m) { return { media: m, uploading: false, pct: 100 }; });
     } else if (id) {
@@ -233,6 +235,7 @@
     el('pModal').classList.remove('on');
     editingId = null;
     mediaItems = [];
+    replaceIndex = null;
   }
 
   function updateStockTxt() {
@@ -244,34 +247,63 @@
 
   function renderMedia() {
     var box = el('pfMedia');
-    if (!mediaItems.length) { box.innerHTML = ''; return; }
-    box.innerHTML = mediaItems.map(function (it, i) {
+    if (!box) return;
+
+    var out = '';
+    for (var i = 0; i < MAX_MEDIA; i++) {
+      var it = mediaItems[i];
+      var n = i + 1;
+      var badge = i === 0
+        ? '<span class="mi-badge main">MAIN</span>'
+        : '<span class="mi-badge">SLOT ' + n + '</span>';
+
+      if (!it) {
+        out += '<div class="mitem is-empty" data-i="' + i + '">' +
+          '<div class="mi-thumb mi-add" aria-hidden="true">＋</div>' +
+          '<div class="mi-info"><b>Slot ' + n + ' empty</b><small>' +
+            (i === 0 ? 'Main photo — shown first everywhere' : 'Photos / videos, order 2–6') +
+          '</small></div>' + badge +
+          '<button class="icbtn" data-i="' + i + '" data-act="pick" title="Add to slot ' + n + '">＋</button>' +
+        '</div>';
+        continue;
+      }
+
       if (it.uploading) {
-        return '<div class="mitem">' +
+        out += '<div class="mitem">' +
           '<div class="mi-thumb">⏳</div>' +
           '<div class="mi-info"><b>Uploading…</b><small>' + (it.file ? App.esc(it.file.name) : '') + '</small>' +
           '<div class="mprog"><i style="width:' + (it.pct || 0) + '%"></i></div></div>' +
+          badge +
           '<button class="icbtn danger" data-i="' + i + '" data-act="cancel">✕</button>' +
         '</div>';
+        continue;
       }
+
       if (it.err) {
-        return '<div class="mitem err">' +
+        out += '<div class="mitem err">' +
           '<div class="mi-thumb">⚠️</div>' +
           '<div class="mi-info"><b>Upload failed</b><small>' + App.esc(it.err) + '</small></div>' +
+          badge +
           '<button class="icbtn danger" data-i="' + i + '" data-act="remove">✕</button>' +
         '</div>';
+        continue;
       }
+
       var m = it.media || {};
       var t = App.mediaThumb(m, 200);
-      return '<div class="mitem">' +
+      out += '<div class="mitem">' +
         '<div class="mi-thumb">' + (t ? '<img src="' + App.esc(t) + '" alt="">' : '🖼️') + '</div>' +
         '<div class="mi-info"><b>' + (m.type === 'video' ? '▶ Video' : 'Photo') +
           (m.bytes ? ' · ' + Math.round(m.bytes / 1024) + ' KB' : '') + '</b>' +
-          '<small>' + App.esc((m.publicId || '').slice(-38)) + '</small></div>' +
-        (i === 0 ? '<span class="mi-cover">COVER</span>' : '<button class="icbtn" data-i="' + i + '" data-act="cover" title="Make cover">⭐</button>') +
-        '<button class="icbtn danger" data-i="' + i + '" data-act="remove">✕</button>' +
+          '<small>' + App.esc(String(m.format || m.publicId || '').slice(-38)) + '</small></div>' +
+        badge +
+        (i > 0 ? '<button class="icbtn" data-i="' + i + '" data-act="cover" title="Move to MAIN slot">★</button>' : '') +
+        '<button class="icbtn" data-i="' + i + '" data-act="pick" title="Replace this slot">↻</button>' +
+        '<button class="icbtn danger" data-i="' + i + '" data-act="remove" title="Empty this slot">✕</button>' +
       '</div>';
-    }).join('');
+    }
+
+    box.innerHTML = out;
   }
 
   function onMediaClick(e) {
@@ -279,6 +311,15 @@
     if (!b) return;
     var i = Number(b.getAttribute('data-i'));
     var act = b.getAttribute('data-act');
+
+    if (act === 'pick') {
+      var f = el('pfFile');
+      if (mediaLoading) { App.toast('Product media is still loading — wait a second', 'err'); return; }
+      replaceIndex = i;
+      f.value = '';
+      f.click();
+      return;
+    }
     if (act === 'remove' || act === 'cancel') {
       var it = mediaItems[i];
       if (it) it.cancelled = true;
@@ -289,27 +330,23 @@
       var m = mediaItems.splice(i, 1)[0];
       mediaItems.unshift(m);
       renderMedia();
-      App.toast('Cover changed ✓', 'ok');
+      App.toast('Moved to the MAIN slot ✓', 'ok');
     }
   }
 
   function addFiles(fileList) {
     var files = Array.prototype.slice.call(fileList || []);
+    var slot = replaceIndex;
+    replaceIndex = null;
     if (!files.length) return;
 
-    for (var i = 0; i < files.length; i++) {
-      if (mediaItems.length >= MAX_MEDIA) {
-        App.toast('Maximum ' + MAX_MEDIA + ' photos/videos per product', 'err');
-        break;
-      }
-      var f = files[i];
-      if (f.size > 60 * 1024 * 1024) {
-        App.toast('"' + f.name + '" is bigger than 60 MB — skip it', 'err');
-        continue;
-      }
-      (function (file) {
+    // Replacing a specific slot: swap only that one file in.
+    if (slot != null) {
+      var old = mediaItems[slot];
+      if (old) old.cancelled = true;
+      (function (file, at) {
         var item = { file: file, uploading: true, pct: 0 };
-        mediaItems.push(item);
+        mediaItems[at] = item;
         renderMedia();
 
         App.cloudUpload(file, function (p) {
@@ -327,7 +364,44 @@
           item.err = err.message;
           renderMedia();
         });
-      })(f);
+      })(files[0], slot);
+      return;
+    }
+
+    for (var i = 0; i < files.length; i++) {
+      var firstEmpty = -1;
+      for (var k = 0; k < MAX_MEDIA; k++) if (!mediaItems[k]) { firstEmpty = k; break; }
+
+      if (firstEmpty < 0) {
+        App.toast('All ' + MAX_MEDIA + ' slots are full — use ↻ to replace one', 'err');
+        break;
+      }
+      var f = files[i];
+      if (f.size > 60 * 1024 * 1024) {
+        App.toast('"' + f.name + '" is bigger than 60 MB — skip it', 'err');
+        continue;
+      }
+      (function (file, at) {
+        var item = { file: file, uploading: true, pct: 0 };
+        mediaItems[at] = item;
+        renderMedia();
+
+        App.cloudUpload(file, function (p) {
+          item.pct = p;
+          renderMedia();
+        }).then(function (media) {
+          if (item.cancelled) return;
+          item.uploading = false;
+          item.media = media;
+          item.pct = 100;
+          renderMedia();
+        }).catch(function (err) {
+          if (item.cancelled) return;
+          item.uploading = false;
+          item.err = err.message;
+          renderMedia();
+        });
+      })(f, firstEmpty);
     }
   }
 
@@ -457,7 +531,7 @@
     el('pfCat').parentNode.insertAdjacentHTML('beforeend',
       '<div class="newcat" id="newCatRow" hidden>' +
         '<input id="ncName" type="text" maxlength="40" placeholder="Category name (e.g. Drill Machine)">' +
-        '<input id="ncIcon" type="text" maxlength="4" placeholder="🛍️" value="🛍️" title="Icon">' +
+        '<input id="ncIcon" type="text" maxlength="120" placeholder="📺" value="📺" title="Icon">' +
         '<button type="button" class="btn btn-pri btn-sm" id="ncSave">＋ Add</button>' +
         '<button type="button" class="btn btn-ghost btn-sm" id="ncCancel">Cancel</button>' +
       '</div>');
