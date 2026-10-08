@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Sit Cover Admin</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-nav="dashboard">
+  <div id="preloader">
+    <div class="pre-card">
+      <img src="assets/logo.svg" alt="logo">
+      <div class="pre-name">Sit Cover Admin</div>
+      <div class="pre-sub">Loading dashboard…</div>
+      <div class="pre-bar"><i></i></div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="adminSide"></aside>
+
+  <div class="main">
+    <header class="top" id="adminTop"></header>
+
+    <div class="wrap-a">
+      <div class="login-err" id="bootErr"></div>
+
+      <div class="page-head">
+        <div>
+          <h2>Dashboard</h2>
+          <div class="sub">Live shop overview — all times are Kuwait time</div>
+        </div>
+        <div class="sub" id="dashDate"></div>
+      </div>
+
+      <div class="cards">
+        <div class="stat"><div class="se">💰</div><div class="sv" id="stSales">—</div><div class="sl">Total Sales</div><div class="ss">all-time orders</div></div>
+        <div class="stat"><div class="se">💵</div><div class="sv" id="stRevenue">—</div><div class="sl">Total Revenue</div><div class="ss">all-time</div></div>
+        <div class="stat"><div class="se">📅</div><div class="sv" id="stToday">—</div><div class="sl">Today's Sales</div><div class="ss" id="stTodayRev">—</div></div>
+        <div class="stat"><div class="se">👥</div><div class="sv" id="stUsers">—</div><div class="sl">Total Users</div><div class="ss">unique customers</div></div>
+        <div class="stat"><div class="se">🟢</div><div class="sv" id="stActive">—</div><div class="sl">Active Users</div><div class="ss">last 5 minutes</div></div>
+        <div class="stat"><div class="se">🌐</div><div class="sv" id="stVisitors">—</div><div class="sl">Website Visitors</div><div class="ss">unique devices</div></div>
+        <div class="stat hot"><div class="se">🆕</div><div class="sv" id="stNew">0</div><div class="sl">New Orders</div><div class="ss">waiting action</div></div>
+      </div>
+
+      <div class="card">
+        <h3>🔥 New orders — submitted to WhatsApp / panel</h3>
+        <div id="newOrders"><div class="empty-box"><div class="big">✨</div><b>No new orders right now</b>New orders appear here instantly.</div></div>
+      </div>
+
+      <div class="card">
+        <h3>🕓 Latest orders</h3>
+        <div id="recentOrders"><div class="empty-box"><div class="big">🧾</div><b>No orders yet</b></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

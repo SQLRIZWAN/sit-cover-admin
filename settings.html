@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings — Sit Cover Admin</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-nav="settings">
+  <div id="preloader">
+    <div class="pre-card">
+      <img src="assets/logo.svg" alt="logo">
+      <div class="pre-name">Sit Cover Admin</div>
+      <div class="pre-sub">Settings</div>
+      <div class="pre-bar"><i></i></div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="adminSide"></aside>
+
+  <div class="main">
+    <header class="top" id="adminTop"></header>
+
+    <div class="wrap-a">
+      <div class="login-err" id="bootErr"></div>
+
+      <div class="page-head">
+        <div>
+          <h2>Settings</h2>
+          <div class="sub">Shop info shown on the website — saved live to Firebase</div>
+        </div>
+        <button class="btn btn-pri" id="btnSave">💾 Save All Settings</button>
+      </div>
+
+      <div class="card">
+        <h3>🏪 Shop info</h3>
+        <div class="row2">
+          <div class="field">
+            <label for="sShop">Shop name (English)</label>
+            <input id="sShop" type="text" maxlength="120">
+          </div>
+          <div class="field">
+            <label for="sShopAr">Shop name (Arabic)</label>
+            <input id="sShopAr" type="text" maxlength="120" dir="rtl">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="sEmail">Email</label>
+            <input id="sEmail" type="email" maxlength="120">
+          </div>
+          <div class="field">
+            <label for="sIg">Instagram (link or @name)</label>
+            <input id="sIg" type="text" maxlength="200">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>💬 Phone &amp; WhatsApp</h3>
+        <div class="row2">
+          <div class="field">
+            <label for="sPhone">Shop phone (footer / calls)</label>
+            <input id="sPhone" type="text" maxlength="40" placeholder="24312328">
+          </div>
+          <div class="field">
+            <label for="sOwner">Owner phone (with country code)</label>
+            <input id="sOwner" type="text" maxlength="40" placeholder="+965 99529389">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="sWa">WhatsApp orders number (digits only)</label>
+            <input id="sWa" type="text" maxlength="20" placeholder="96599529389">
+            <div class="tip">Order messages open a chat to this number</div>
+          </div>
+          <div class="field">
+            <label for="sWamd">WAMD number</label>
+            <input id="sWamd" type="text" maxlength="40">
+          </div>
+        </div>
+        <div class="field">
+          <label for="sWamdLink">WAMD payment link</label>
+          <input id="sWamdLink" type="text" maxlength="500" placeholder="https://…">
+        </div>
+        <div class="field">
+          <label>“Submit via WhatsApp” button on the order page</label>
+          <div style="display:flex;align-items:center;gap:10px;padding-top:6px">
+            <label class="switch"><input type="checkbox" id="sWaSubmit" checked><i></i></label>
+            <span id="sWaSubmitTxt" style="font-size:13px;font-weight:700;color:#16a34a">Shown — customers can send the order to WhatsApp too</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📍 Location &amp; delivery fees</h3>
+        <div class="row2">
+          <div class="field">
+            <label for="sAddr">Address (English)</label>
+            <input id="sAddr" type="text" maxlength="300">
+          </div>
+          <div class="field">
+            <label for="sAddrAr">Address (Arabic)</label>
+            <input id="sAddrAr" type="text" maxlength="300" dir="rtl">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="sLat">Shop latitude</label>
+            <input id="sLat" type="number" step="any" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="sLng">Shop longitude</label>
+            <input id="sLng" type="number" step="any" inputmode="decimal">
+          </div>
+        </div>
+        <div class="field">
+          <label>Distance-based delivery fees (auto-calculated from the map pin)</label>
+          <div class="tbl-wrap">
+            <table class="tbl" id="tierTbl">
+              <tr><th>Up to (km)</th><th>Fee (KD)</th><th></th></tr>
+            </table>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="tierAdd" type="button">＋ Add distance step</button>
+          <div class="tip">Empty “Up to” row = any farther distance. Leave the last row empty for out-of-range flat fee.</div>
+        </div>
+      </div>
+
+      <div style="text-align:right;margin-top:18px">
+        <button class="btn btn-pri" id="btnSave2">💾 Save All Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

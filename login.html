@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in — Sit Cover Admin</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div id="preloader">
+    <div class="pre-card">
+      <img src="assets/logo.svg" alt="logo">
+      <div class="pre-name">Sit Cover Admin</div>
+      <div class="pre-sub">Secure panel</div>
+      <div class="pre-bar"><i></i></div>
+    </div>
+  </div>
+
+  <div class="login-wrap">
+    <div class="login-card">
+      <img class="lg" src="assets/logo.svg" alt="logo">
+      <h1>Admin Panel</h1>
+      <div class="lsub">Fahad Asi Manea Al-Zaferi Co</div>
+
+      <div class="login-err" id="bootErr"></div>
+      <div class="login-err" id="lgErr"></div>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="field">
+          <label for="lgEmail">Email</label>
+          <input id="lgEmail" type="email" autocomplete="username" placeholder="admin@example.com" required>
+        </div>
+        <div class="field">
+          <label for="lgPass">Password</label>
+          <div class="pw-wrap">
+            <input id="lgPass" type="password" autocomplete="current-password" placeholder="••••••••" required>
+            <button type="button" class="pw-eye" id="lgEye">SHOW</button>
+          </div>
+        </div>
+        <button class="btn btn-pri btn-block" id="lgBtn" type="submit">Log in</button>
+      </form>
+
+      <div class="lnk"><button type="button" id="lgForgot">Forgot password?</button></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

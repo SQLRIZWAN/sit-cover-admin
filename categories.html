@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Categories — Sit Cover Admin</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-nav="categories">
+  <div id="preloader">
+    <div class="pre-card">
+      <img src="assets/logo.svg" alt="logo">
+      <div class="pre-name">Sit Cover Admin</div>
+      <div class="pre-sub">Categories</div>
+      <div class="pre-bar"><i></i></div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="adminSide"></aside>
+
+  <div class="main">
+    <header class="top" id="adminTop"></header>
+
+    <div class="wrap-a">
+      <div class="login-err" id="bootErr"></div>
+
+      <div class="page-head">
+        <div>
+          <h2>Categories (website tabs)</h2>
+          <div class="sub">Each active category becomes a tab on the website — reorder with ↑ ↓</div>
+        </div>
+        <button class="btn btn-pri" id="btnAdd">＋ Add Category</button>
+      </div>
+
+      <div class="card">
+        <div id="catList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="mMask"></div>
+  <div class="modal" id="cModal">
+    <div class="m-head">
+      <h3 id="mTitle">Add Category</h3>
+      <button class="x" id="mClose" type="button">✕</button>
+    </div>
+    <div class="m-body">
+      <div class="field">
+        <label for="cfName">Category name (English) <span class="req">*</span></label>
+        <input id="cfName" type="text" maxlength="60" placeholder="e.g. TV Remote">
+      </div>
+      <div class="field">
+        <label for="cfNameAr">Category name (Arabic)</label>
+        <input id="cfNameAr" type="text" maxlength="60" dir="rtl" placeholder="ريموت التلفزيون">
+      </div>
+      <div class="field">
+        <label for="cfIcon">Icon (one emoji)</label>
+        <input id="cfIcon" type="text" maxlength="4" placeholder="📺">
+        <div class="tip">Optional — shows next to the tab name on the website</div>
+      </div>
+      <div class="field">
+        <label>Active (visible as a website tab)</label>
+        <div style="display:flex;align-items:center;gap:10px;padding-top:6px">
+          <label class="switch"><input type="checkbox" id="cfActive" checked><i></i></label>
+          <span id="cfActiveTxt" style="font-size:13px;font-weight:700;color:#16a34a">Active — shown on website</span>
+        </div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-ghost" id="mCancel" type="button">Cancel</button>
+      <button class="btn btn-pri" id="mSave" type="button">💾 Save Category</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/categories.js"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders — Sit Cover Admin</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-nav="orders">
+  <div id="preloader">
+    <div class="pre-card">
+      <img src="assets/logo.svg" alt="logo">
+      <div class="pre-name">Sit Cover Admin</div>
+      <div class="pre-sub">Orders</div>
+      <div class="pre-bar"><i></i></div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="adminSide"></aside>
+
+  <div class="main">
+    <header class="top" id="adminTop"></header>
+
+    <div class="wrap-a">
+      <div class="login-err" id="bootErr"></div>
+
+      <div class="page-head">
+        <div>
+          <h2>Orders</h2>
+          <div class="sub" id="ordSub">Live from the website</div>
+        </div>
+        <div class="sub" id="ordCount"></div>
+      </div>
+
+      <div class="ochips" id="statusChips">
+        <button class="chip on" data-st="all">All</button>
+        <button class="chip" data-st="new">🆕 New</button>
+        <button class="chip" data-st="confirmed">✅ Confirmed</button>
+        <button class="chip" data-st="delivered">📦 Delivered</button>
+        <button class="chip" data-st="cancelled">❌ Cancelled</button>
+      </div>
+
+      <div id="oList"></div>
+    </div>
+  </div>
+
+  <div class="mask" id="mMask"></div>
+  <div class="modal wide" id="oModal">
+    <div class="m-head">
+      <h3 id="omTitle">Order</h3>
+      <button class="x" id="omClose" type="button">✕</button>
+    </div>
+    <div class="m-body" id="omBody"></div>
+    <div class="m-foot" id="omFoot"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/orders.js"></script>
+</body>
+</html>
