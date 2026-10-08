@@ -98,10 +98,8 @@
       ? 'https://maps.google.com/?q=' + cust.lat + ',' + cust.lng
       : null;
 
-    var shot = (o.paymentScreenshot && o.paymentScreenshot.url)
-      ? '<div class="field"><label>Payment screenshot</label>' +
-        '<a href="' + App.esc(o.paymentScreenshot.url) + '" target="_blank" rel="noopener">' +
-        '<img class="shot" src="' + App.esc(o.paymentScreenshot.url) + '" alt="payment screenshot"></a></div>'
+    var shot = o.paymentScreenshot
+      ? '<div class="field"><label>Payment screenshot</label><div id="shotBox"><div class="empty-box" style="padding:14px"><b>Loading screenshot…</b></div></div></div>'
       : '';
 
     el('omBody').innerHTML =
@@ -154,6 +152,23 @@
 
     el('mMask').classList.add('on');
     el('oModal').classList.add('on');
+
+    if (o.paymentScreenshot) {
+      var box = document.getElementById('shotBox');
+      if (box) {
+        App.DB.ref('order_shots/' + o.id).once('value').then(function (s) {
+          var d = s.val();
+          if (d && typeof d === 'string') {
+            box.innerHTML = '<a href="' + App.esc(d) + '" target="_blank" rel="noopener">' +
+              '<img class="shot" src="' + App.esc(d) + '" alt="payment screenshot"></a>';
+          } else {
+            box.innerHTML = '<div class="empty-box" style="padding:14px"><b>Screenshot not found</b>It may have been removed.</div>';
+          }
+        }).catch(function () {
+          box.innerHTML = '<div class="empty-box" style="padding:14px"><b>Could not load screenshot</b></div>';
+        });
+      }
+    }
   }
 
   function closeModal() {

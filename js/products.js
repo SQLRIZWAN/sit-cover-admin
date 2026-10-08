@@ -8,7 +8,9 @@
 
   var editingId = null;
   var mediaItems = [];
+  var mediaLoading = false;
   var MAX_MEDIA = 6;
+  var MAX_MEDIA_BYTES = 7000000;
 
   function el(id) { return document.getElementById(id); }
 
@@ -60,14 +62,15 @@
 
   function cardHTML(p) {
     var m = App.firstMedia(p);
-    var thumb = m ? App.mediaThumb(m, 500) : '';
+    var thumb = p.thumb || (m ? App.mediaThumb(m, 500) : '');
+    var isVideo = p.videoFirst === true || (m && m.type === 'video');
     var out = p.inStock === false;
-    var mediaCount = (p.media || []).length;
+    var mediaCount = p.mediaCount != null ? p.mediaCount : ((p.media || []).length);
 
     return '<div class="pcard" data-id="' + App.esc(p.id) + '">' +
       '<div class="pc-img">' +
         (thumb ? '<img src="' + App.esc(thumb) + '" alt="" loading="lazy">' : '<div class="ph">🛍️</div>') +
-        (m && m.type === 'video' ? '<span class="pc-vid">▶ VIDEO</span>' : '') +
+        (isVideo ? '<span class="pc-vid">▶ VIDEO</span>' : '') +
       '</div>' +
       '<div class="pc-b">' +
         '<div class="pc-n">' + App.esc(p.name) + '</div>' +
@@ -102,7 +105,10 @@
       if (dl) dl.addEventListener('click', function () {
         var ok = confirm('Delete "' + p.name + '" permanently?\n\nIt will disappear from the website instantly.');
         if (!ok) return;
-        App.DB.ref('products/' + id).remove().then(function () {
+        var del = {};
+        del['products/' + id] = null;
+        del['media/' + id] = null;
+        App.DB.ref().update(del).then(function () {
           App.toast('Product deleted ✓', 'ok');
         }).catch(function (e) {
           App.toast('Delete failed: ' + e.message, 'err');
@@ -154,7 +160,29 @@
     if (p && p.categoryId) el('pfCat').value = p.categoryId;
     else if (catId) el('pfCat').value = catId;
 
-    mediaItems = p && p.media ? p.media.map(function (m) { return { media: m, uploading: false, pct: 100 }; }) : [];
+    mediaItems = [];
+    mediaLoading = false;
+    if (p && p.media && p.media.length) {
+      mediaItems = p.media.map(function (m) { return { media: m, uploading: false, pct: 100 }; });
+    } else if (id) {
+      mediaLoading = true;
+      App.DB.ref('media/' + id).once('value').then(function (s) {
+        if (editingId !== id) return;
+        var v = s.val() || {};
+        var arr = [];
+        Object.keys(v).sort().forEach(function (k) {
+          if (v[k] && v[k].url) arr.push({ media: v[k], uploading: false, pct: 100 });
+        });
+        mediaItems = arr;
+        mediaLoading = false;
+        renderMedia();
+      }).catch(function () {
+        if (editingId !== id) return;
+        mediaLoading = false;
+        renderMedia();
+        App.toast('Could not load product media', 'err');
+      });
+    }
     renderMedia();
 
     el('mMask').classList.add('on');
@@ -273,47 +301,90 @@
     if (!name) { App.toast('Enter the product name', 'err'); el('pfName').focus(); return; }
     if (!isFinite(price) || price < 0) { App.toast('Enter a valid price in KD', 'err'); el('pfPrice').focus(); return; }
     if (!cat) { App.toast('Create a category first (Categories page), then select it', 'err'); return; }
+    if (mediaLoading) { App.toast('Product media is still loading — wait a second', 'err'); return; }
 
     var stillUploading = mediaItems.some(function (it) { return it.uploading; });
     if (stillUploading) { App.toast('Please wait — a file is still uploading', 'err'); return; }
 
-    var media = mediaItems
-      .filter(function (it) { return !it.err && it.media; })
+    var items = mediaItems
+      .filter(function (it) { return !it.err && it.media && it.media.url; })
       .map(function (it) { return it.media; });
 
-    var data = {
-      name: name,
-      price: Math.round(price * 1000) / 1000,
-      categoryId: cat,
-      description: el('pfDesc').value.trim(),
-      media: media,
-      inStock: el('pfStock').checked,
-      order: parseInt(el('pfOrder').value, 10) || 0,
-      updatedAt: firebase.database.ServerValue.TIMESTAMP
-    };
+    if (items.length > MAX_MEDIA) {
+      App.toast('Maximum ' + MAX_MEDIA + ' photos/videos per product', 'err');
+      return;
+    }
+
+    var mediaObj = {};
+    items.forEach(function (m, i) { mediaObj['m' + i] = m; });
+
+    var first = items[0] || null;
+    var videoFirst = !!(first && first.type === 'video');
+
+    var sizeBytes = 0;
+    try { sizeBytes = JSON.stringify(mediaObj).length; } catch (e) { sizeBytes = MAX_MEDIA_BYTES + 1; }
+    if (sizeBytes > MAX_MEDIA_BYTES) {
+      App.toast('Media too big (' + Math.round(sizeBytes / 1000000) + ' MB) — max 7 MB total. Use fewer/smaller files.', 'err');
+      return;
+    }
 
     var btn = el('mSave');
     btn.disabled = true;
     btn.textContent = 'Saving…';
 
-    var done = function () {
-      btn.disabled = false;
-      btn.textContent = '💾 Save Product';
-      closeModal();
-      App.toast('Product saved — live on website ✓', 'ok');
-    };
-    var fail = function (e) {
-      btn.disabled = false;
-      btn.textContent = '💾 Save Product';
-      App.toast('Save failed: ' + (e && e.message ? e.message : ''), 'err');
+    var thumbP = '';
+    var miniP = '';
+    if (first) {
+      var src = first.type === 'video' ? (first.thumb || '') : first.url;
+      thumbP = App.makeVariant(src, 480, 0.72);
+      miniP = App.makeVariant(src, 110, 0.6);
+    }
+
+    var finishSave = function (thumb, mini) {
+      var data = {
+        name: name,
+        price: Math.round(price * 1000) / 1000,
+        categoryId: cat,
+        description: el('pfDesc').value.trim(),
+        inStock: el('pfStock').checked,
+        order: parseInt(el('pfOrder').value, 10) || 0,
+        mediaCount: items.length,
+        thumb: thumb || '',
+        mini: mini || thumb || '',
+        videoFirst: videoFirst,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      var key = editingId;
+      if (!key) {
+        key = App.DB.ref('products').push().key;
+        data.createdAt = firebase.database.ServerValue.TIMESTAMP;
+      } else {
+        data.createdAt = (App.state.products[editingId] || {}).createdAt || firebase.database.ServerValue.TIMESTAMP;
+      }
+
+      var upd = {};
+      upd['products/' + key] = data;
+      upd['media/' + key] = items.length ? mediaObj : null;
+
+      App.DB.ref().update(upd).then(function () {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Product';
+        closeModal();
+        App.toast('Product saved — live on website ✓', 'ok');
+      }).catch(function (e) {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Product';
+        App.toast('Save failed: ' + (e && e.message ? e.message : ''), 'err');
+      });
     };
 
-    if (editingId) {
-      data.createdAt = (App.state.products[editingId] || {}).createdAt || Date.now();
-      App.DB.ref('products/' + editingId).update(data).then(done).catch(fail);
+    if (first && thumbP && thumbP.then) {
+      thumbP.then(function (thumb) {
+        return miniP.then(function (mini) { finishSave(thumb, mini); });
+      }).catch(function () { finishSave('', ''); });
     } else {
-      data.createdAt = firebase.database.ServerValue.TIMESTAMP;
-      App.DB.ref('products').push(data).then(done).catch(fail);
+      finishSave('', '');
     }
   }
 
