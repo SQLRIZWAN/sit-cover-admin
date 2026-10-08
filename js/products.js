@@ -32,9 +32,22 @@
     App.pageTitle('Products — ' + t);
   }
 
+  function renderQuickCategories() {
+    var box = el('catQuick');
+    if (!box) return;
+    var html = '<a class="cat-quick-btn' + (!catId ? ' on' : '') + '" href="products.html">All Products</a>';
+    cats().forEach(function (c) {
+      html += '<a class="cat-quick-btn' + (catId === c.id ? ' on' : '') + '" href="products.html?cat=' + encodeURIComponent(c.id) + '">' +
+        App.esc(c.icon || '📦') + ' ' + App.esc(c.name) + '</a>';
+    });
+    html += '<a class="cat-quick-btn add" href="categories.html">＋ New Category</a>';
+    box.innerHTML = html;
+  }
+
   function render() {
     setNav();
     title();
+    renderQuickCategories();
 
     if (!App.loaded.products) {
       el('pgSub').textContent = 'Loading products…';
@@ -486,7 +499,8 @@
       };
       App.DB.ref('categories/' + key).set(data).then(function () {
         App.state.categories = App.state.categories || {};
-        App.state.categories[key] = data;
+      App.state.categories[key] = data;
+        App.fire('categories', App.state.categories);
         btn.disabled = false;
         el('newCatRow').hidden = true;
         el('ncName').value = '';

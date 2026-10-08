@@ -335,6 +335,7 @@
         '<a data-nav="dashboard" href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Home</span></a>' +
         '<a data-nav="orders" href="orders.html"><svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span>Orders</span><span class="pill hide" id="navOrdersB">0</span></a>' +
         '<a data-nav="reports" href="reports.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="M8 16v-4M12 16V8M16 16v-6M20 16V3"/></svg><span>Reports</span></a>' +
+        '<a data-nav="customer-reports" href="customer-reports.html"><span>📝</span><span>Customer Reports</span></a>' +
         '<a data-nav="products-all" href="products.html"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg><span>Products</span></a>' +
         '<a data-nav="categories" href="categories.html"><svg viewBox="0 0 24 24"><path d="M20.6 13.4L12 4.8V2H4a2 2 0 0 0-2 2v8h2.8l8.6 8.6a2 2 0 0 0 2.8 0l4.4-4.4a2 2 0 0 0 0-2.8z"/><circle cx="7" cy="7" r="1.5"/></svg><span>Categories</span></a>' +
         '<a data-nav="settings" href="settings.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.88 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.98a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.88.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.88V9c.24.63.85 1.05 1.53 1.06H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.34z"/></svg><span>Settings</span></a>' +
@@ -351,6 +352,7 @@
         '<a class="nav-i" data-nav="dashboard" href="index.html"><span class="ic">📊</span> Dashboard</a>' +
         '<a class="nav-i" data-nav="orders" href="orders.html"><span class="ic">🧾</span> Orders <span class="pill hide" id="navOrders">0</span></a>' +
         '<a class="nav-i" data-nav="reports" href="reports.html"><span class="ic">📈</span> Reports</a>' +
+        '<a class="nav-i" data-nav="customer-reports" href="customer-reports.html"><span class="ic">📝</span> Customer Reports</a>' +
         '<a class="nav-i" data-nav="categories" href="categories.html"><span class="ic">🗂️</span> Categories</a>' +
         '<div class="nav-label">Products</div>' +
         '<a class="nav-i" data-nav="products-all" href="products.html"><span class="ic">📦</span> All Products</a>' +

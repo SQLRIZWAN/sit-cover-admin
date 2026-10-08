@@ -20,6 +20,7 @@
       }
     },
     "stats": { ".read": "auth != null", ".write": true, "visitors": { ".read": true } },
-    "aiScans": { ".read": "auth != null", ".write": true }
+    "aiScans": { ".read": "auth != null", ".write": true },
+    "reports": { ".read": "auth != null", ".write": "auth != null" }
   }
 }

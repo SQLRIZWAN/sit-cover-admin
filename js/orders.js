@@ -10,7 +10,7 @@
   var STATUS_LABEL = {
     new: '🆕 New',
     confirmed: '✅ Confirmed',
-    delivered: '📦 Delivered',
+    delivered: '📦 Completed',
     cancelled: '❌ Cancelled'
   };
 

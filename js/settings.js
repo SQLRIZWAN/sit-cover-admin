@@ -12,6 +12,15 @@
 
   function el(id) { return document.getElementById(id); }
 
+  function activateTab(tab) {
+    $$('#settingsTabs [data-tab]').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-tab') === tab);
+    });
+    $$('.card[data-setting-tab]').forEach(function (card) {
+      card.hidden = card.getAttribute('data-setting-tab') !== tab;
+    });
+  }
+
   function waSubmitTxt() {
     var on = el('sWaSubmit').checked;
     var t = el('sWaSubmitTxt');
@@ -84,6 +93,7 @@
     el('sOwner').value = cfg.ownerPhone || '';
     el('sWa').value = cfg.whatsappNumber || '';
     el('sWamd').value = cfg.wamdNumber || '';
+    el('sWamdName').value = cfg.wamdName || '';
     el('sWamdLink').value = cfg.wamdLink || '';
     el('sWaSubmit').checked = cfg.whatsappSubmitEnabled !== false;
     waSubmitTxt();
@@ -116,6 +126,7 @@
     data.ownerPhone = el('sOwner').value.trim();
     data.whatsappNumber = el('sWa').value.trim();
     data.wamdNumber = el('sWamd').value.trim();
+    data.wamdName = el('sWamdName').value.trim();
     data.wamdLink = el('sWamdLink').value.trim();
     data.whatsappSubmitEnabled = el('sWaSubmit').checked;
     data.visitorCountingEnabled = el('sVisitors').checked;
@@ -142,6 +153,10 @@
   el('btnSave2').addEventListener('click', save);
   el('sWaSubmit').addEventListener('change', waSubmitTxt);
   el('sVisitors').addEventListener('change', visitorTxt);
+  $$('#settingsTabs [data-tab]').forEach(function (b) {
+    b.addEventListener('click', function () { activateTab(b.getAttribute('data-tab')); });
+  });
+  activateTab('shop');
   el('tierAdd').addEventListener('click', function () {
     var tr = document.createElement('tbody');
     tr.innerHTML = tierRowHTML({ maxKm: null, fee: 1 });
