@@ -344,7 +344,7 @@
   function sideHTML() {
     return '' +
       '<div class="side-head">' +
-        '<img src="assets/logo.svg" alt="">' +
+        '<img src="assets/shop-logo.webp" alt="">' +
         '<div><b id="sdName">Sit Cover</b><small>Admin Panel</small></div>' +
       '</div>' +
       '<nav>' +
