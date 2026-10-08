@@ -131,22 +131,23 @@
     });
   }
 
-  function fillCatSelect() {
+  function fillCatSelect(keep) {
     var sel = el('pfCat');
+    var cur = keep !== undefined ? keep : sel.value;
     var list = cats();
-    if (!list.length) {
-      sel.innerHTML = '<option value="">— create a category first —</option>';
-      return;
+    sel.innerHTML = (list.length ? '' : '<option value="">— create a category below —</option>') +
+      list.map(function (c) {
+        return '<option value="' + App.esc(c.id) + '">' + App.esc(c.name) +
+          (c.active === false ? ' (inactive)' : '') + '</option>';
+      }).join('') +
+      '<option value="__new">＋ Create new category…</option>';
+    if (cur) {
+      if (cur === '__new' || list.some(function (c) { return c.id === cur; })) sel.value = cur;
     }
-    sel.innerHTML = list.map(function (c) {
-      return '<option value="' + App.esc(c.id) + '">' + App.esc(c.name) +
-        (c.active === false ? ' (inactive)' : '') + '</option>';
-    }).join('');
   }
 
   function openModal(id) {
     editingId = id;
-    fillCatSelect();
 
     var p = id ? (App.state.products || {})[id] : null;
     el('mTitle').textContent = p ? 'Edit Product' : 'Add Product';
@@ -159,6 +160,25 @@
     fillCatSelect();
     if (p && p.categoryId) el('pfCat').value = p.categoryId;
     else if (catId) el('pfCat').value = catId;
+    var ncr = el('newCatRow');
+    if (ncr) ncr.hidden = el('pfCat').value !== '__new';
+
+    if (App.DB) {
+      App.DB.ref('categories').once('value').then(function (snap) {
+        App.state.categories = snap.val() || {};
+        App.loaded.categories = true;
+        var keep = el('pfCat').value;
+        fillCatSelect(keep);
+        if (p && p.categoryId) el('pfCat').value = p.categoryId;
+        else if (!keep && catId) el('pfCat').value = catId;
+        if (!cats().length) {
+          el('pfCat').value = '__new';
+          if (ncr) ncr.hidden = false;
+        }
+      }).catch(function () {
+        App.toast('Could not load categories — check your connection', 'err');
+      });
+    }
 
     mediaItems = [];
     mediaLoading = false;
@@ -300,7 +320,7 @@
 
     if (!name) { App.toast('Enter the product name', 'err'); el('pfName').focus(); return; }
     if (!isFinite(price) || price < 0) { App.toast('Enter a valid price in KD', 'err'); el('pfPrice').focus(); return; }
-    if (!cat) { App.toast('Create a category first (Categories page), then select it', 'err'); return; }
+    if (!cat || cat === '__new') { App.toast('Select a category — or finish creating the new one below the list', 'err'); el('pfCat').focus(); return; }
     if (mediaLoading) { App.toast('Product media is still loading — wait a second', 'err'); return; }
 
     var stillUploading = mediaItems.some(function (it) { return it.uploading; });
@@ -415,6 +435,63 @@
     });
 
     el('pfMedia').addEventListener('click', onMediaClick);
+
+    el('pfCat').parentNode.insertAdjacentHTML('beforeend',
+      '<div class="newcat" id="newCatRow" hidden>' +
+        '<input id="ncName" type="text" maxlength="40" placeholder="Category name (e.g. Drill Machine)">' +
+        '<input id="ncIcon" type="text" maxlength="4" placeholder="🛍️" value="🛍️" title="Icon">' +
+        '<button type="button" class="btn btn-pri btn-sm" id="ncSave">＋ Add</button>' +
+        '<button type="button" class="btn btn-ghost btn-sm" id="ncCancel">Cancel</button>' +
+      '</div>');
+
+    el('pfCat').addEventListener('change', function () {
+      var row = el('newCatRow');
+      if (el('pfCat').value === '__new') {
+        row.hidden = false;
+        setTimeout(function () { el('ncName').focus(); }, 60);
+      } else {
+        row.hidden = true;
+      }
+    });
+
+    el('ncCancel').addEventListener('click', function () {
+      el('newCatRow').hidden = true;
+      el('ncName').value = '';
+      fillCatSelect();
+      if (el('pfCat').value === '__new') el('pfCat').value = '';
+    });
+
+    el('ncSave').addEventListener('click', function () {
+      var name = el('ncName').value.trim();
+      if (!name) { App.toast('Type the category name', 'err'); el('ncName').focus(); return; }
+      if (!App.DB) { App.toast('Not connected yet — wait a moment', 'err'); return; }
+      var btn = el('ncSave');
+      btn.disabled = true;
+      var maxOrder = 0;
+      App.catList(true).forEach(function (c) {
+        if (typeof c.order === 'number' && c.order > maxOrder) maxOrder = c.order;
+      });
+      var key = App.DB.ref('categories').push().key;
+      var data = {
+        name: name,
+        icon: (el('ncIcon').value || '🛍️').trim(),
+        active: true,
+        order: maxOrder + 1,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      };
+      App.DB.ref('categories/' + key).set(data).then(function () {
+        App.state.categories = App.state.categories || {};
+        App.state.categories[key] = data;
+        btn.disabled = false;
+        el('newCatRow').hidden = true;
+        el('ncName').value = '';
+        fillCatSelect(key);
+        App.toast('Category "' + name + '" created ✓', 'ok');
+      }).catch(function (e) {
+        btn.disabled = false;
+        App.toast('Could not create: ' + (e && e.message ? e.message : ''), 'err');
+      });
+    });
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && el('pModal').classList.contains('on')) closeModal();

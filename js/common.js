@@ -13,6 +13,8 @@
 
   var $ = App.$ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = App.$$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  window.$ = $;
+  window.$$ = $$;
 
   App.esc = function (v) {
     return String(v == null ? '' : v)
@@ -64,7 +66,7 @@
     s.src = src;
     s.async = true;
     if (cb) {
-      s.onload = cb;
+      s.onload = function () { cb(null); };
       s.onerror = function () { cb(new Error('load failed: ' + src)); };
     }
     document.head.appendChild(s);
@@ -327,6 +329,17 @@
     return o && o.status ? o.status : 'new';
   };
 
+  function bottomNavHTML() {
+    return '' +
+      '<nav class="bnav" id="bottomNav">' +
+        '<a data-nav="dashboard" href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Home</span></a>' +
+        '<a data-nav="orders" href="orders.html"><svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span>Orders</span><span class="pill hide" id="navOrdersB">0</span></a>' +
+        '<a data-nav="products-all" href="products.html"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg><span>Products</span></a>' +
+        '<a data-nav="categories" href="categories.html"><svg viewBox="0 0 24 24"><path d="M20.6 13.4L12 4.8V2H4a2 2 0 0 0-2 2v8h2.8l8.6 8.6a2 2 0 0 0 2.8 0l4.4-4.4a2 2 0 0 0 0-2.8z"/><circle cx="7" cy="7" r="1.5"/></svg><span>Categories</span></a>' +
+        '<a data-nav="settings" href="settings.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.88 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.98a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.88.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.88V9c.24.63.85 1.05 1.53 1.06H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.34z"/></svg><span>Settings</span></a>' +
+      '</nav>';
+  }
+
   function sideHTML() {
     return '' +
       '<div class="side-head">' +
@@ -364,7 +377,7 @@
 
   function markActive() {
     var nav = document.body.getAttribute('data-nav') || '';
-    $$('.nav-i').forEach(function (a) {
+    $$('.nav-i, .bnav a').forEach(function (a) {
       a.classList.toggle('on', a.getAttribute('data-nav') === nav);
     });
   }
@@ -383,7 +396,10 @@
 
   function initShell() {
     var side = $('#adminSide');
-    if (side) side.innerHTML = sideHTML();
+    if (side) {
+      side.innerHTML = sideHTML();
+      document.body.insertAdjacentHTML('beforeend', bottomNavHTML());
+    }
     var top = $('#adminTop');
     if (top) top.innerHTML = topHTML();
 
@@ -489,12 +505,31 @@
 
     DB.ref('orders').orderByChild('status').equalTo('new').on('value', function (s) {
       var n = s.numChildren();
-      var p = $('#navOrders');
-      if (p) {
-        p.textContent = n;
-        p.classList.toggle('hide', n === 0);
-      }
+      ['#navOrders', '#navOrdersB'].forEach(function (sel) {
+        var p = $(sel);
+        if (p) {
+          p.textContent = n;
+          p.classList.toggle('hide', n === 0);
+        }
+      });
     });
+  }
+
+  var FB_BASES = [
+    'https://www.gstatic.com/firebasejs/10.12.5',
+    'https://cdn.jsdelivr.net/npm/firebase@10.12.5',
+    'https://unpkg.com/firebase@10.12.5',
+    'https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.5'
+  ];
+
+  function loadFbFile(file, cb) {
+    var i = 0;
+    (function next() {
+      if (i >= FB_BASES.length) { cb(new Error('all CDNs failed: ' + file)); return; }
+      App.loadScript(FB_BASES[i++] + '/' + file, function (err) {
+        if (err) next(); else cb(null);
+      });
+    })();
   }
 
   function loadFirebase() {
@@ -503,36 +538,39 @@
 
     var cfg = (window.APP_CONFIG && APP_CONFIG.firebase) || {};
     if (!cfg.apiKey || !cfg.databaseURL) {
-      var b = $('#bootErr');
-      if (b) {
-        b.style.display = 'block';
-        b.textContent = 'Configuration missing — js/config.js was not filled. Rebuild with secrets.';
-      }
+      showBootErr('Configuration missing — js/config.js was not filled. Rebuild with secrets.', true);
       return;
     }
 
-    App.loadScript('https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js', function (e1) {
-      if (e1) { showBootErr('Cannot reach Firebase (network or ad-blocker).'); return; }
-      App.loadScript('https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js', function (e2) {
-        if (e2) { showBootErr('Cannot reach Firebase database.'); return; }
-        App.loadScript('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js', function (e3) {
-          if (e3) { showBootErr('Cannot reach Firebase auth.'); return; }
+    loadFbFile('firebase-app-compat.js', function (e1) {
+      if (e1) { showBootErr('Cannot load Firebase — check your internet or ad-blocker.', true); return; }
+      loadFbFile('firebase-database-compat.js', function (e2) {
+        if (e2) { showBootErr('Cannot load Firebase database module.', true); return; }
+        loadFbFile('firebase-auth-compat.js', function (e3) {
+          if (e3) { showBootErr('Cannot load Firebase auth module.', true); return; }
           try {
             firebase.initializeApp(cfg);
             connectDB();
+            setTimeout(function () {
+              if (!App.connected) showBootErr('Live connection is slow — data may not have loaded.', true);
+            }, 8000);
           } catch (err) {
-            showBootErr('Firebase init error: ' + err.message);
+            showBootErr('Firebase init error: ' + err.message, true);
           }
         });
       });
     });
   }
 
-  function showBootErr(msg) {
+  function showBootErr(msg, retry) {
     var b = $('#bootErr');
     if (b) {
       b.style.display = 'block';
-      b.textContent = msg;
+      b.innerHTML = msg + (retry ? ' <button type="button" class="boot-retry" id="bootRetry">Retry</button>' : '');
+      if (retry) {
+        var rb = $('#bootRetry');
+        if (rb) rb.addEventListener('click', function () { location.reload(); });
+      }
     }
     var p = $('#preloader');
     if (p) p.classList.add('off');
