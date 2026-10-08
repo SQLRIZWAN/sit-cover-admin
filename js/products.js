@@ -98,6 +98,11 @@
       var p = (App.state.products || {})[id];
       if (!p) return;
 
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('button, input, label, a')) return;
+        openModal(id);
+      });
+
       var ed = card.querySelector('.pc-edit');
       if (ed) ed.addEventListener('click', function () { openModal(id); });
 
@@ -350,7 +355,7 @@
 
     var btn = el('mSave');
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+      btn.textContent = 'Submitting…';
 
     var thumbP = '';
     var miniP = '';
@@ -389,12 +394,12 @@
 
       App.DB.ref().update(upd).then(function () {
         btn.disabled = false;
-        btn.textContent = '💾 Save Product';
+        btn.textContent = '✅ Submit Product';
         closeModal();
         App.toast('Product saved — live on website ✓', 'ok');
       }).catch(function (e) {
         btn.disabled = false;
-        btn.textContent = '💾 Save Product';
+        btn.textContent = '✅ Submit Product';
         App.toast('Save failed: ' + (e && e.message ? e.message : ''), 'err');
       });
     };

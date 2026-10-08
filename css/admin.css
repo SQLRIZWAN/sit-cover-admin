@@ -284,7 +284,7 @@ button { cursor: pointer; background: none; border: 0; }
 .badge.out { background: #fee2e2; color: #b91c1c; }
 .badge.cat { background: #f1f5f9; color: var(--navy); }
 
-.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 15px; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
 .pcard {
   background: var(--card);
   border: 1px solid var(--line);
@@ -294,7 +294,7 @@ button { cursor: pointer; background: none; border: 0; }
   display: flex;
   flex-direction: column;
 }
-.pcard .pc-img { aspect-ratio: 16/10; background: #eef2f7; position: relative; }
+.pcard .pc-img { aspect-ratio: 4/3; max-height: 150px; background: #eef2f7; position: relative; }
 .pcard .pc-img img { width: 100%; height: 100%; object-fit: cover; }
 .pcard .pc-img .ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 34px; color: #94a3b8; }
 .pcard .pc-vid {
@@ -308,11 +308,11 @@ button { cursor: pointer; background: none; border: 0; }
   padding: 3px 8px;
   border-radius: 99px;
 }
-.pcard .pc-b { padding: 12px 13px 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
-.pcard .pc-n { font-weight: 800; color: var(--navy); font-size: 14.5px; line-height: 1.3; }
-.pcard .pc-p { font-weight: 900; color: var(--gold-d); font-size: 16px; }
+.pcard .pc-b { padding: 10px 11px 11px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.pcard .pc-n { font-weight: 800; color: var(--navy); font-size: 13.5px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pcard .pc-p { font-weight: 900; color: var(--gold-d); font-size: 15px; }
 .pcard .pc-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.pcard .pc-act { display: flex; gap: 7px; margin-top: auto; padding-top: 6px; }
+.pcard .pc-act { display: flex; gap: 6px; margin-top: auto; padding-top: 5px; }
 .pcard .pc-act .btn { flex: 1; }
 
 .tbl-wrap { overflow-x: auto; }
@@ -644,3 +644,11 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
 .stat.hot { background: linear-gradient(135deg, #fff 0%, #fff7ed 100%); border-color: #fde68a; }
 .pcard { transition: transform .15s, box-shadow .15s; }
 .pcard:hover { transform: translateY(-3px); box-shadow: 0 16px 36px -22px rgba(15, 23, 42, .5); }
+.pcard { cursor: pointer; }
+.pcard .pc-act, .pcard .pc-stock { cursor: default; }
+@media (max-width: 560px) {
+  .pgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .pcard .pc-img { max-height: 120px; }
+  .pcard .pc-b { padding: 8px; }
+  .pcard .pc-act { flex-direction: column; }
+}

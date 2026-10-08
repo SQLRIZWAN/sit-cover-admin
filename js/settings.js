@@ -21,6 +21,13 @@
     t.style.color = on ? '#16a34a' : '#dc2626';
   }
 
+  function visitorTxt() {
+    var on = el('sVisitors').checked;
+    var t = el('sVisitorsTxt');
+    t.textContent = on ? 'On — anonymous visitor count is enabled' : 'Off — visitor count is disabled';
+    t.style.color = on ? '#16a34a' : '#dc2626';
+  }
+
   function tierRowHTML(t) {
     return '<tr class="tier">' +
       '<td><input class="t-max" type="number" min="1" step="any" inputmode="decimal" value="' +
@@ -80,6 +87,8 @@
     el('sWamdLink').value = cfg.wamdLink || '';
     el('sWaSubmit').checked = cfg.whatsappSubmitEnabled !== false;
     waSubmitTxt();
+    el('sVisitors').checked = cfg.visitorCountingEnabled === true;
+    visitorTxt();
     el('sAddr').value = cfg.address || '';
     el('sAddrAr').value = cfg.addressAr || '';
     el('sLat').value = cfg.shopLat != null ? cfg.shopLat : '';
@@ -109,6 +118,7 @@
     data.wamdNumber = el('sWamd').value.trim();
     data.wamdLink = el('sWamdLink').value.trim();
     data.whatsappSubmitEnabled = el('sWaSubmit').checked;
+    data.visitorCountingEnabled = el('sVisitors').checked;
     data.address = el('sAddr').value.trim();
     data.addressAr = el('sAddrAr').value.trim();
     data.shopLat = isFinite(lat) ? lat : 29.2844;
@@ -131,6 +141,7 @@
   el('btnSave').addEventListener('click', save);
   el('btnSave2').addEventListener('click', save);
   el('sWaSubmit').addEventListener('change', waSubmitTxt);
+  el('sVisitors').addEventListener('change', visitorTxt);
   el('tierAdd').addEventListener('click', function () {
     var tr = document.createElement('tbody');
     tr.innerHTML = tierRowHTML({ maxKm: null, fee: 1 });
