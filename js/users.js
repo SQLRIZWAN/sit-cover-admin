@@ -36,13 +36,10 @@
     return 'https://wa.me/' + n;
   }
 
-  // The WhatsApp button is always offered: the customer's own number when we
-  // have one, otherwise the shop's configured WhatsApp so the admin can still
-  // reach out about the account.
+  // WhatsApp is offered only when the customer has saved their own number —
+  // never silently swapped for the shop's number.
   function shopWa() {
-    var c = App.state.config || {};
-    var n = String(c.whatsappNumber || c.ownerPhone || '').replace(/[^0-9]/g, '');
-    return n ? 'https://wa.me/' + n : null;
+    return null;
   }
 
   function card(u) {
@@ -198,6 +195,7 @@
         (wa ? '<a class="btn btn-ghost btn-sm" href="' + esc(wa) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') +
         (u.photo ? '<button type="button" class="btn btn-ghost btn-sm" id="uDetailDp">View full photo</button>' : '') +
       '</div>' +
+      '<div class="udetail-stats" id="uDetailStats"><div class="udetail-loading">Loading purchase history…</div></div>' +
     '</div>';
     back.innerHTML = html;
     back.hidden = false;
@@ -212,6 +210,82 @@
     if (dp) dp.addEventListener('click', function () { App.viewImage(u.photo, u.name || u.email || 'User'); });
     var f = document.getElementById('uDetailX');
     if (f) f.focus();
+
+    loadUserStats(u);
+  }
+
+  // Pull this customer's all-time orders + saved basket so the detail view
+  // shows what they actually bought, how much they spent, and what is sitting
+  // in their cart right now.
+  function loadUserStats(u) {
+    var box = document.getElementById('uDetailStats');
+    if (!box || !App.DB || !u.uid) {
+      if (box) box.innerHTML = '<div class="udetail-loading">No purchase data available.</div>';
+      return;
+    }
+    var ordersRef = App.DB.ref('orders').orderByChild('uid').equalTo(u.uid).limitToLast(500);
+    Promise.all([
+      ordersRef.once('value').catch(function () { return null; }),
+      App.DB.ref('stats/carts/' + u.uid).once('value').catch(function () { return null; })
+    ]).then(function (res) {
+      var osnap = res[0], csnap = res[1];
+      var orders = [];
+      if (osnap) osnap.forEach(function (ch) { var v = ch.val() || {}; v.id = v.id || ch.key; orders.push(v); });
+      orders.sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+
+      var spent = 0, delivered = 0, active = 0;
+      var prodMap = {};
+      orders.forEach(function (o) {
+        var st = String(o.status || 'new');
+        spent += Number(o.total) || 0;
+        if (st === 'delivered') delivered++;
+        else if (st !== 'cancelled') active++;
+        (o.items || []).forEach(function (it) {
+          var key = String(it.id || it.name || '');
+          if (!key) return;
+          if (!prodMap[key]) prodMap[key] = { name: it.name || key, qty: 0, spent: 0 };
+          prodMap[key].qty += Number(it.qty) || 1;
+          prodMap[key].spent += (Number(it.price) || 0) * (Number(it.qty) || 1);
+        });
+      });
+      var prods = Object.keys(prodMap).map(function (k) { return prodMap[k]; })
+        .sort(function (a, b) { return b.qty - a.qty; }).slice(0, 8);
+
+      var basket = [];
+      var cval = csnap && csnap.val();
+      var raw = cval && cval.items;
+      if (Array.isArray(raw)) basket = raw;
+      else if (raw && typeof raw === 'object') basket = Object.keys(raw).sort().map(function (k) { return raw[k]; });
+      basket = (basket || []).filter(Boolean);
+
+      var html = '';
+      html += '<div class="ustat-grid">' +
+        '<div class="ustat"><b>' + orders.length + '</b><span>Orders</span></div>' +
+        '<div class="ustat"><b>' + active + '</b><span>In progress</span></div>' +
+        '<div class="ustat"><b>' + delivered + '</b><span>Delivered</span></div>' +
+        '<div class="ustat"><b>' + App.fmtKD(spent) + '</b><span>Total spent</span></div>' +
+      '</div>';
+
+      html += '<div class="ustat-sec"><h4>Products bought (all time)</h4>';
+      if (!prods.length) html += '<div class="ustat-empty">Nothing purchased yet.</div>';
+      else html += prods.map(function (p) {
+        return '<div class="ustat-row"><span>' + esc(p.name) + '</span>' +
+          '<b>×' + p.qty + ' · ' + App.fmtKD(p.spent) + '</b></div>';
+      }).join('');
+      html += '</div>';
+
+      html += '<div class="ustat-sec"><h4>Saved basket (in their cart now)</h4>';
+      if (!basket.length) html += '<div class="ustat-empty">Basket is empty.</div>';
+      else html += basket.map(function (it) {
+        return '<div class="ustat-row"><span>' + esc(it.name || it.id || 'Item') + '</span>' +
+          '<b>×' + (Number(it.qty) || 1) + ' · ' + App.fmtKD((Number(it.price) || 0) * (Number(it.qty) || 1)) + '</b></div>';
+      }).join('');
+      html += '</div>';
+
+      box.innerHTML = html;
+    }).catch(function () {
+      box.innerHTML = '<div class="udetail-loading">Could not load purchase history.</div>';
+    });
   }
 
   function snapshotToArray(snap) {
