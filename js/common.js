@@ -281,6 +281,59 @@
     });
   };
 
+  // No Storage bucket: big videos are split into chunks under `media/{id}`.
+  App.VIDEO_MAX_BYTES = 20 * 1024 * 1024;
+  App.VIDEO_CHUNK_LEN = 4000000;
+
+  App.videoHead = function (format, data) {
+    var i = data ? data.indexOf(',') : -1;
+    if (i > -1) return data.slice(0, i + 1);
+    return 'data:video/' + String(format || 'mp4').toLowerCase().replace(/[^a-z0-9]+/g, '') + ';base64,';
+  };
+
+  App.splitB64 = function (data) {
+    var i = data.indexOf(',');
+    var body = i > -1 ? data.slice(i + 1) : data;
+    var parts = [];
+    for (var p = 0; p < body.length; p += App.VIDEO_CHUNK_LEN) parts.push(body.slice(p, p + App.VIDEO_CHUNK_LEN));
+    return parts;
+  };
+
+  App.hydrateMedia = function (raw) {
+    if (!raw) return [];
+    var keys = [];
+    if (Array.isArray(raw)) {
+      for (var a = 0; a < raw.length; a++) keys.push(String(a));
+    } else {
+      keys = Object.keys(raw);
+    }
+    keys.sort(function (x, y) {
+      var nx = parseInt(String(x).replace(/\D/g, ''), 10) || 0;
+      var ny = parseInt(String(y).replace(/\D/g, ''), 10) || 0;
+      return nx - ny;
+    });
+    var out = [];
+    keys.forEach(function (k) {
+      var m = raw[k];
+      if (!m || typeof m !== 'object') return;
+      if (m.chunked && m.ch && typeof m.ch === 'object') {
+        var cn = Object.keys(m.ch).sort(function (x, y) { return (Number(x) || 0) - (Number(y) || 0); });
+        if (!cn.length) return;
+        var copy = {};
+        for (var kk in m) if (kk !== 'ch' && kk !== '_b64') copy[kk] = m[kk];
+        var body = '';
+        for (var n = 0; n < cn.length; n++) body += m.ch[cn[n]];
+        copy.url = (m.head || m.mime || App.videoHead(m.format, '')) + body;
+        copy.chunked = true;
+        copy.ch = m.ch;
+        out.push(copy);
+        return;
+      }
+      if (m.url || m.thumb) out.push(m);
+    });
+    return out;
+  };
+
   App.cloudUpload = function (file, onProgress) {
     return new Promise(function (resolve, reject) {
       try {
@@ -292,15 +345,15 @@
         }
         if (onProgress) onProgress(15);
         if (isVideo) {
-          if (file.size > 2.5 * 1024 * 1024) {
-            reject(new Error('Video too large (max 2.5 MB) — trim it or upload a photo'));
+          if (file.size > App.VIDEO_MAX_BYTES) {
+            reject(new Error('Video too large (max 20 MB) — trim it or upload a photo'));
             return;
           }
           videoPoster(file).then(function (poster) {
             if (onProgress) onProgress(60);
             return readDataURL(file).then(function (data) {
               if (onProgress) onProgress(100);
-              resolve({
+              var out = {
                 type: 'video',
                 url: data,
                 thumb: poster,
@@ -308,7 +361,13 @@
                 cloud: 'inline',
                 format: String(file.name || '').split('.').pop() || 'mp4',
                 bytes: file.size
-              });
+              };
+              if (data.length > App.VIDEO_CHUNK_LEN) {
+                out.chunked = true;
+                out._b64 = data;
+                out.head = App.videoHead(out.format, data);
+              }
+              resolve(out);
             });
           }).catch(function (e) { reject(e); });
         } else {

@@ -147,7 +147,9 @@ button { cursor: pointer; background: none; border: 0; }
 }
 .logout:hover { background: rgba(220,38,38,.28); color: #fff; }
 
-.main { margin-left: var(--side-w); min-height: 100vh; display: flex; flex-direction: column; }
+/* Page shell — scoped to body so a stray `class="main"` badge/chip inside a
+   card can never pick up min-height:100vh and blow up its row. */
+body > .main { margin-left: var(--side-w); min-height: 100vh; display: flex; flex-direction: column; }
 .top {
   position: sticky;
   top: 0;
@@ -443,17 +445,17 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
 .mitem {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 8px;
+  padding: 7px 8px;
   background: #fff;
 }
-.mitem .mi-thumb { width: 62px; height: 48px; border-radius: 8px; overflow: hidden; background: #eef2f7; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+.mitem .mi-thumb { width: 56px; height: 44px; border-radius: 8px; overflow: hidden; background: #eef2f7; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
 .mitem .mi-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.mitem .mi-info { flex: 1; min-width: 0; }
+.mitem .mi-info { flex: 1 1 auto; min-width: 0; line-height: 1.25; }
 .mitem .mi-info b { display: block; font-size: 12.5px; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mitem .mi-info small { font-size: 11.5px; color: var(--muted); }
+.mitem .mi-info small { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mitem .mi-cover { font-size: 10.5px; font-weight: 800; background: var(--gold); color: var(--navy); padding: 3px 8px; border-radius: 99px; }
 .mprog { height: 5px; background: #e5e7eb; border-radius: 99px; overflow: hidden; margin-top: 5px; }
 .mprog i { display: block; height: 100%; width: 0%; background: var(--gold); transition: width .18s; }
@@ -519,7 +521,7 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
 @media (max-width: 960px) {
   .side { transform: translateX(-104%); }
   .side.on { transform: translateX(0); }
-  .main { margin-left: 0; }
+  body > .main { margin-left: 0; }
   #mMenu { display: inline-flex; align-items: center; justify-content: center; }
   .scrim {
     display: block;
@@ -584,7 +586,7 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
 
 @media (max-width: 960px) {
   .bnav { display: flex; }
-  .main { padding-bottom: 62px; }
+  body > .main { padding-bottom: 62px; }
   .toast { bottom: 74px; }
   .saved-bar { bottom: 8px; }
 }
@@ -901,15 +903,21 @@ img.mini {
   border-radius: 99px;
   white-space: nowrap;
 }
-.mi-badge.main { background: var(--navy); color: #fff; }
+.mi-badge.is-main { background: var(--navy); color: #fff; }
 .mitem.is-empty { border-style: dashed; background: #fcfcfe; }
 .mitem.is-empty .mi-thumb { background: transparent; border: 1px dashed #cbd5e1; color: var(--muted); font-size: 20px; }
 .mitem.is-empty .mi-info b { color: var(--muted); font-weight: 700; }
 .mitem .icbtn { flex: none; }
 
 @media (max-width: 560px) {
-  .mitem { flex-wrap: wrap; }
-  .mitem .mi-info { flex: 1 1 100%; order: 3; }
+  /* one tight row per slot — wrapping doubled every card's height */
+  .mitem { flex-wrap: nowrap; gap: 7px; padding: 6px 7px; }
+  .mitem .mi-thumb { width: 46px; height: 40px; }
+  .mitem .mi-info { flex: 1 1 auto; min-width: 0; }
+  .mitem .mi-info b { font-size: 12px; }
+  .mitem .mi-info small { font-size: 10.5px; }
+  .mi-badge { font-size: 9px; padding: 2px 6px; letter-spacing: .04em; }
+  .mitem.is-empty .mi-thumb { font-size: 16px; }
 }
 
 /* ------------------------------------------------------------------ *

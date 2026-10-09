@@ -208,12 +208,9 @@
       mediaLoading = true;
       App.DB.ref('media/' + id).once('value').then(function (s) {
         if (editingId !== id) return;
-        var v = s.val() || {};
-        var arr = [];
-        Object.keys(v).sort().forEach(function (k) {
-          if (v[k] && v[k].url) arr.push({ media: v[k], uploading: false, pct: 100 });
+        mediaItems = App.hydrateMedia(s.val()).map(function (m) {
+          return { media: m, uploading: false, pct: 100 };
         });
-        mediaItems = arr;
         mediaLoading = false;
         renderMedia();
       }).catch(function () {
@@ -254,7 +251,7 @@
       var it = mediaItems[i];
       var n = i + 1;
       var badge = i === 0
-        ? '<span class="mi-badge main">MAIN</span>'
+        ? '<span class="mi-badge is-main">MAIN</span>'
         : '<span class="mi-badge">SLOT ' + n + '</span>';
 
       if (!it) {
@@ -269,7 +266,7 @@
       }
 
       if (it.uploading) {
-        out += '<div class="mitem">' +
+        out += '<div class="mitem" data-i="' + i + '">' +
           '<div class="mi-thumb">⏳</div>' +
           '<div class="mi-info"><b>Uploading…</b><small>' + (it.file ? App.esc(it.file.name) : '') + '</small>' +
           '<div class="mprog"><i style="width:' + (it.pct || 0) + '%"></i></div></div>' +
@@ -280,7 +277,7 @@
       }
 
       if (it.err) {
-        out += '<div class="mitem err">' +
+        out += '<div class="mitem err" data-i="' + i + '">' +
           '<div class="mi-thumb">⚠️</div>' +
           '<div class="mi-info"><b>Upload failed</b><small>' + App.esc(it.err) + '</small></div>' +
           badge +
@@ -291,7 +288,7 @@
 
       var m = it.media || {};
       var t = App.mediaThumb(m, 200);
-      out += '<div class="mitem">' +
+      out += '<div class="mitem" data-i="' + i + '">' +
         '<div class="mi-thumb">' + (t ? '<img src="' + App.esc(t) + '" alt="">' : '🖼️') + '</div>' +
         '<div class="mi-info"><b>' + (m.type === 'video' ? '▶ Video' : 'Photo') +
           (m.bytes ? ' · ' + Math.round(m.bytes / 1024) + ' KB' : '') + '</b>' +
@@ -323,12 +320,15 @@
     if (act === 'remove' || act === 'cancel') {
       var it = mediaItems[i];
       if (it) it.cancelled = true;
-      mediaItems.splice(i, 1);
+      // Clear this slot only — splicing shifted every later slot up, so the
+      // wrong photo looked like it had been deleted.
+      mediaItems[i] = null;
       renderMedia();
     }
     if (act === 'cover' && i > 0) {
-      var m = mediaItems.splice(i, 1)[0];
-      mediaItems.unshift(m);
+      var m = mediaItems[i];
+      mediaItems[i] = mediaItems[0];
+      mediaItems[0] = m;
       renderMedia();
       App.toast('Moved to the MAIN slot ✓', 'ok');
     }
@@ -377,8 +377,13 @@
         break;
       }
       var f = files[i];
-      if (f.size > 60 * 1024 * 1024) {
-        App.toast('"' + f.name + '" is bigger than 60 MB — skip it', 'err');
+      var isV = /^video\//.test(f.type || '');
+      if (isV && f.size > App.VIDEO_MAX_BYTES) {
+        App.toast('"' + f.name + '" is bigger than 20 MB — trim it first', 'err');
+        continue;
+      }
+      if (!isV && f.size > 25 * 1024 * 1024) {
+        App.toast('"' + f.name + '" is bigger than 25 MB — use a smaller photo', 'err');
         continue;
       }
       (function (file, at) {
@@ -415,11 +420,11 @@
     if (!cat || cat === '__new') { App.toast('Select a category — or finish creating the new one below the list', 'err'); el('pfCat').focus(); return; }
     if (mediaLoading) { App.toast('Product media is still loading — wait a second', 'err'); return; }
 
-    var stillUploading = mediaItems.some(function (it) { return it.uploading; });
+    var stillUploading = mediaItems.some(function (it) { return it && it.uploading; });
     if (stillUploading) { App.toast('Please wait — a file is still uploading', 'err'); return; }
 
     var items = mediaItems
-      .filter(function (it) { return !it.err && it.media && it.media.url; })
+      .filter(function (it) { return it && !it.err && it.media && (it.media.url || it.media._b64 || it.media.ch); })
       .map(function (it) { return it.media; });
 
     if (items.length > MAX_MEDIA) {
@@ -427,8 +432,27 @@
       return;
     }
 
+    // Videos over one RTDB string are stored as `ch/*` chunks. They stay out
+    // of the main update (16 MB write cap) and are pushed slot by slot after.
     var mediaObj = {};
-    items.forEach(function (m, i) { mediaObj['m' + i] = m; });
+    var chunks = [];
+    items.forEach(function (m, i) {
+      var slot = 'm' + i;
+      if (!m.chunked) { mediaObj[slot] = m; return; }
+      var parts = m._b64 ? App.splitB64(m._b64) : [];
+      if (!parts.length && m.ch) {
+        parts = Object.keys(m.ch)
+          .sort(function (a, b) { return (Number(a) || 0) - (Number(b) || 0); })
+          .map(function (k) { return m.ch[k]; });
+      }
+      var slim = {};
+      for (var k in m) if (k !== '_b64' && k !== 'ch' && k !== 'url') slim[k] = m[k];
+      slim.chunked = true;
+      slim.head = m.head || App.videoHead(m.format, m.url || '');
+      slim.url = '';
+      mediaObj[slot] = slim;
+      if (parts.length) chunks.push({ slot: slot, parts: parts });
+    });
 
     var first = items[0] || null;
     var videoFirst = !!(first && first.type === 'video');
@@ -479,16 +503,35 @@
       upd['products/' + key] = data;
       upd['media/' + key] = items.length ? mediaObj : null;
 
-      App.DB.ref().update(upd).then(function () {
+      var writeChunks = function (idx) {
+        if (idx >= chunks.length) return Promise.resolve();
+        var c = chunks[idx];
+        var base = 'media/' + key + '/' + c.slot + '/ch';
+        var step = function (n) {
+          if (n >= c.parts.length) return writeChunks(idx + 1);
+          btn.textContent = 'Saving video ' + (idx + 1) + '/' + chunks.length +
+            ' — part ' + (n + 1) + '/' + c.parts.length;
+          return App.DB.ref(base + '/' + n).set(c.parts[n]).then(function () { return step(n + 1); });
+        };
+        return step(0);
+      };
+
+      var done = function () {
         btn.disabled = false;
         btn.textContent = '✅ Submit Product';
         closeModal();
         App.toast('Product saved — live on website ✓', 'ok');
-      }).catch(function (e) {
+      };
+      var failed = function (e) {
         btn.disabled = false;
         btn.textContent = '✅ Submit Product';
         App.toast('Save failed: ' + (e && e.message ? e.message : ''), 'err');
-      });
+      };
+
+      App.DB.ref().update(upd)
+        .then(function () { return writeChunks(0); })
+        .then(done)
+        .catch(failed);
     };
 
     if (first && thumbP && thumbP.then) {
