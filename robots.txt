@@ -1,0 +1,3 @@
+# Admin panel — not for search engines
+User-agent: *
+Disallow: /
