@@ -1330,3 +1330,51 @@ a.stat.stat-link .ss::after { content: " →"; }
 }
 .rp-thumb img { display: block; width: 100%; max-height: 140px; object-fit: contain; }
 .rp-thumb:hover { border-color: var(--gold); }
+
+/* ---------- Round 7b: user full-detail modal ---------- */
+.udetail-back {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(15, 23, 42, .55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.udetail-card {
+  background: #fff; border-radius: 18px; width: 100%; max-width: 460px;
+  max-height: 88vh; overflow: auto; padding: 22px;
+  box-shadow: 0 30px 70px -30px rgba(15, 23, 42, .7);
+}
+.udetail-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.udetail-top b { font-size: 17px; display: block; }
+.uc-av-lg { width: 60px; height: 60px; flex: none; }
+.udetail-x {
+  margin-left: auto; flex: none; width: 38px; height: 38px; border-radius: 50%;
+  border: 1.5px solid var(--line, #e5e7eb); background: #fff; font-size: 16px; cursor: pointer;
+}
+.udetail-x:hover { border-color: var(--gold, #d97706); }
+.udetail-rows { display: flex; flex-direction: column; gap: 2px; }
+.udetail-row {
+  display: flex; justify-content: space-between; gap: 14px;
+  padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13.5px;
+}
+.udetail-row span { color: #64748b; flex: none; }
+.udetail-row b { text-align: right; word-break: break-word; }
+.udetail-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.udetail-acts .btn { flex: 1 1 auto; min-height: 44px; }
+:focus-visible { outline: 3px solid var(--gold, #d97706); outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .ucard, .chip, .stat { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .btn:active { transform: scale(.99); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+/* Round 7b — login polish */
+.lg-go {
+  width: 100%;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  box-shadow: 0 12px 26px -14px rgba(217, 119, 6, .7);
+}
+.lg-go:hover, .lg-go:focus-visible { transform: translateY(-1px); filter: brightness(1.05); }
+.lg-go:active { transform: translateY(0) scale(.99); }
+.pw-eye { min-height: 34px; }

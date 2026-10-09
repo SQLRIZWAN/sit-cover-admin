@@ -36,16 +36,27 @@
     return 'https://wa.me/' + n;
   }
 
+  // The WhatsApp button is always offered: the customer's own number when we
+  // have one, otherwise the shop's configured WhatsApp so the admin can still
+  // reach out about the account.
+  function shopWa() {
+    var c = App.state.config || {};
+    var n = String(c.whatsappNumber || c.ownerPhone || '').replace(/[^0-9]/g, '');
+    return n ? 'https://wa.me/' + n : null;
+  }
+
   function card(u) {
     var joined = u.createdAt ? App.fmtDate(u.createdAt) : '—';
     var last = u.lastLoginAt ? App.fmtDate(u.lastLoginAt) : '—';
     var bits = [];
     if (u.phone) bits.push('📞 ' + esc(u.phone));
+    else bits.push('📞 no phone saved');
     bits.push('🗓️ joined ' + esc(joined));
     bits.push('🔄 last sign-in ' + esc(last));
-    var wa = waFor(u.phone);
+    var wa = waFor(u.phone) || shopWa();
+    var uid = esc(u.uid || u.email || u.name || '');
 
-    return '<div class="ucard">' +
+    return '<div class="ucard" data-uid="' + esc(u.uid || '') + '" data-email="' + esc(u.email || '') + '">' +
       '<div class="uc-av">' +
         (u.photo
           ? '<button type="button" class="uc-dp" data-dp="' + esc(u.photo) +
@@ -68,6 +79,7 @@
         (wa ? '<a class="btn btn-ghost btn-sm" href="' + esc(wa) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') +
         (u.photo ? '<button type="button" class="btn btn-ghost btn-sm" data-dp="' + esc(u.photo) +
           '" data-dpname="' + esc(u.name || u.email || 'User') + '">View DP</button>' : '') +
+        '<button type="button" class="btn btn-pri btn-sm" data-detail="' + esc(uid) + '">Full details</button>' +
       '</div>' +
     '</div>';
   }
@@ -132,7 +144,74 @@
           App.viewImage(b.getAttribute('data-dp'), b.getAttribute('data-dpname'));
         });
       });
+      // "Full details" opens everything we know about this customer.
+      $$('[data-detail]', c).forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var key = b.getAttribute('data-detail');
+          var u = null;
+          for (var i = 0; i < users.length; i++) {
+            var cand = users[i];
+            if (esc(cand.uid || '') === key || esc(cand.email || '') === key || esc(cand.name || '') === key) { u = cand; break; }
+          }
+          if (u) showDetail(u);
+        });
+      });
     });
+  }
+
+  function showDetail(u) {
+    var back = document.getElementById('uDetail');
+    if (!back) {
+      back = document.createElement('div');
+      back.id = 'uDetail';
+      back.className = 'udetail-back';
+      document.body.appendChild(back);
+    }
+    var wa = waFor(u.phone) || shopWa();
+    var joined = u.createdAt ? App.fmtDate(u.createdAt) : '—';
+    var last = u.lastLoginAt ? App.fmtDate(u.lastLoginAt) : '—';
+    var rows = [
+      ['Full name', u.name || '—'],
+      ['Email', u.email || '—'],
+      ['Phone', u.phone || 'Not saved'],
+      ['Delivery notes / info', u.info || '—'],
+      ['Joined', joined],
+      ['Last sign-in', last],
+      ['Provider', u.provider || 'google'],
+      ['User ID (uid)', u.uid || '—']
+    ];
+    var html = '<div class="udetail-card" role="dialog" aria-modal="true" aria-label="User details">' +
+      '<div class="udetail-top">' +
+        '<div class="uc-av uc-av-lg">' + avatarHTML(u) + '</div>' +
+        '<div><b>' + esc(u.name || 'Unnamed user') + '</b><div class="uc-mail">' + esc(u.email || 'no email') + '</div></div>' +
+        '<button type="button" class="udetail-x" id="uDetailX" aria-label="Close">✕</button>' +
+      '</div>' +
+      '<div class="udetail-rows">' +
+        rows.map(function (r) {
+          return '<div class="udetail-row"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>';
+        }).join('') +
+      '</div>' +
+      '<div class="udetail-acts">' +
+        (u.email ? '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(u.email) + '">Email</a>' : '') +
+        (u.phone ? '<a class="btn btn-ghost btn-sm" href="tel:' + esc(String(u.phone).replace(/[^\d+]/g, '')) + '">Call</a>' : '') +
+        (wa ? '<a class="btn btn-ghost btn-sm" href="' + esc(wa) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') +
+        (u.photo ? '<button type="button" class="btn btn-ghost btn-sm" id="uDetailDp">View full photo</button>' : '') +
+      '</div>' +
+    '</div>';
+    back.innerHTML = html;
+    back.hidden = false;
+    var close = function () { back.hidden = true; back.innerHTML = ''; };
+    var x = document.getElementById('uDetailX');
+    if (x) x.addEventListener('click', close);
+    back.onclick = function (e) { if (e.target === back) close(); };
+    document.addEventListener('keydown', function onEsc(e) {
+      if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
+    });
+    var dp = document.getElementById('uDetailDp');
+    if (dp) dp.addEventListener('click', function () { App.viewImage(u.photo, u.name || u.email || 'User'); });
+    var f = document.getElementById('uDetailX');
+    if (f) f.focus();
   }
 
   function snapshotToArray(snap) {
@@ -178,6 +257,10 @@
     App.onAuth(function (user) {
       if (user) attach();
     });
+
+    // The WhatsApp fallback number lives in the shop config; re-render the
+    // list once it arrives so the button is never missing.
+    App.on('config', function () { if (users.length) render(); });
 
     render();
   }

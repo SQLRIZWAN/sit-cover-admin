@@ -115,5 +115,22 @@
       }
       box.innerHTML = listHTML(arr.map(function (o) { return orderCard(o, true); }).join(''));
     });
+
+    // Show whether visitor counting is on or off right on the dashboard card,
+    // with a shortcut to the Settings → Analytics toggle.
+    var paintVisitorFlag = function () {
+      var card = document.querySelector('.stat .sv#stVisitors');
+      if (!card) return;
+      var wrap = card.parentElement;
+      var on = !!(App.state.config && App.state.config.visitorCountingEnabled === true);
+      var sub = wrap.querySelector('.ss');
+      if (sub) {
+        sub.textContent = on ? 'unique devices • counting ON' : 'counting OFF — turn on in Settings';
+        sub.style.color = on ? '#16a34a' : '#dc2626';
+        sub.style.fontWeight = '700';
+      }
+    };
+    paintVisitorFlag();
+    App.on('config', paintVisitorFlag);
   });
 })();
