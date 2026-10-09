@@ -430,7 +430,7 @@
       imgView.className = 'img-view';
       imgView.setAttribute('role', 'dialog');
       imgView.setAttribute('aria-label', 'Photo viewer');
-      imgView.innerHTML = '<img alt=""><button type="button" class="img-view-x" aria-label="Close photo">&#10005;</button>';
+      imgView.innerHTML = '<img alt="" referrerpolicy="no-referrer"><button type="button" class="img-view-x" aria-label="Close photo">&#10005;</button>';
       imgView.addEventListener('click', function () { imgView.classList.remove('on'); });
       document.body.appendChild(imgView);
       document.addEventListener('keydown', function (e) {
@@ -494,7 +494,7 @@
         '<a data-nav="orders" href="orders.html"><svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span>Orders</span><span class="pill hide" id="navOrdersB">0</span></a>' +
         '<a data-nav="users" href="users.html"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.9 19.5a6.1 6.1 0 0 1 12.2 0"/><path d="M16.4 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.2a6.1 6.1 0 0 1 3.5 5.3"/></svg><span>Users</span><span class="pill hide" id="navUsersB">0</span></a>' +
         '<a data-nav="reports" href="reports.html"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="M8 16v-4M12 16V8M16 16v-6M20 16V3"/></svg><span>Reports</span></a>' +
-        '<a data-nav="customer-reports" href="customer-reports.html"><span>📝</span><span>Customer Reports</span></a>' +
+        '<a data-nav="customer-reports" href="customer-reports.html"><span>📝</span><span>Issues</span></a>' +
         '<a data-nav="products-all" href="products.html"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg><span>Products</span></a>' +
         '<a data-nav="categories" href="categories.html"><svg viewBox="0 0 24 24"><path d="M20.6 13.4L12 4.8V2H4a2 2 0 0 0-2 2v8h2.8l8.6 8.6a2 2 0 0 0 2.8 0l4.4-4.4a2 2 0 0 0 0-2.8z"/><circle cx="7" cy="7" r="1.5"/></svg><span>Categories</span></a>' +
         '<a data-nav="settings" href="settings.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.88 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.98a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.88.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.88V9c.24.63.85 1.05 1.53 1.06H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.34z"/></svg><span>Settings</span></a>' +

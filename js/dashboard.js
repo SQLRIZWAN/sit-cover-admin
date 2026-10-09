@@ -5,26 +5,29 @@
 
   function num(v) { return Number(v) || 0; }
 
-  function orderRow(o, showStatus) {
+  function orderCard(o, showStatus) {
     var items = (o.items || []).map(function (i) { return i.name + ' ×' + i.qty; }).join(', ');
     var st = App.orderStatus(o);
-    return '<tr>' +
-      '<td><b>#' + String(o.id || '').slice(-8).toUpperCase() + '</b></td>' +
-      '<td>' + App.fmtDate(o.createdAt) + '</td>' +
-      '<td>' + App.esc((o.customer && o.customer.name) || '—') + '<br><small style="color:#6b7280">' + App.esc((o.customer && o.customer.phone) || '') + '</small></td>' +
-      '<td style="max-width:230px">' + App.esc(items) + '</td>' +
-      '<td><b>' + App.fmtKD(o.total) + '</b></td>' +
-      '<td>' + (o.paymentMethod === 'wamd' ? '📲 WAMD' : '💵 COD') + '</td>' +
-      (showStatus ? '<td><span class="badge ' + App.esc(st) + '">' + App.esc(st) + '</span></td>' : '') +
-      '<td style="text-align:right"><a class="btn btn-ghost btn-sm" href="orders.html?o=' + encodeURIComponent(o.id || '') + '">Open</a></td>' +
-    '</tr>';
+    var name = (o.customer && o.customer.name) || 'Customer';
+    var phone = (o.customer && o.customer.phone) || '';
+    return '<div class="dorder">' +
+      '<b class="dorder-id">#' + String(o.id || '').slice(-8).toUpperCase() + '</b>' +
+      '<b class="dorder-tot">' + App.fmtKD(o.total) + '</b>' +
+      '<div class="dorder-meta">' +
+        '<span>' + App.fmtDate(o.createdAt) + '</span>' +
+        '<span class="dsep">·</span>' +
+        '<span>' + (o.paymentMethod === 'wamd' ? '📲 WAMD' : '💵 COD') + '</span>' +
+        (showStatus ? '<span class="badge ' + App.esc(st) + '">' + App.esc(st) + '</span>' : '') +
+      '</div>' +
+      '<div class="dorder-cust">' + App.esc(name) + (phone ? ' · ' + App.esc(phone) : '') + '</div>' +
+      '<div class="dorder-items">' + App.esc(items || '—') + '</div>' +
+      '<a class="btn btn-ghost btn-sm dorder-open" href="orders.html?o=' + encodeURIComponent(o.id || '') + '">Open</a>' +
+    '</div>';
   }
 
-  function tableHTML(rows) {
-    if (!rows) return '';
-    return '<div class="tbl-wrap"><table class="tbl">' +
-      '<tr><th>Order</th><th>When</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr>' +
-      rows + '</table></div>';
+  function listHTML(cards) {
+    if (!cards) return '';
+    return '<div class="dorders">' + cards + '</div>';
   }
 
   function emptyBox(big, title, sub) {
@@ -99,7 +102,7 @@
         box.innerHTML = emptyBox('✨', 'No new orders right now', 'New orders appear here instantly.');
         return;
       }
-      box.innerHTML = tableHTML(arr.map(function (o) { return orderRow(o, false); }).join(''));
+      box.innerHTML = listHTML(arr.map(function (o) { return orderCard(o, false); }).join(''));
     });
 
     DB.ref('orders').orderByChild('createdAt').limitToLast(15).on('value', function (s) {
@@ -110,7 +113,7 @@
         box.innerHTML = emptyBox('🧾', 'No orders yet', 'Orders from the website will show up here live.');
         return;
       }
-      box.innerHTML = tableHTML(arr.map(function (o) { return orderRow(o, true); }).join(''));
+      box.innerHTML = listHTML(arr.map(function (o) { return orderCard(o, true); }).join(''));
     });
   });
 })();

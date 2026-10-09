@@ -323,6 +323,36 @@ body > .main { margin-left: var(--side-w); min-height: 100vh; display: flex; fle
 .pcard .pc-act .btn { flex: 1; }
 
 .tbl-wrap { overflow-x: auto; }
+
+/* Dashboard order cards — compact, readable on a phone */
+.dorders { display: flex; flex-direction: column; gap: 9px; }
+.dorder {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 3px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.dorder > * { grid-column: 1; min-width: 0; }
+.dorder-id { font-size: 14px; letter-spacing: .02em; }
+.dorder-tot { font-size: 14px; color: #0f172a; }
+.dorder-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.dorder-meta .dsep { opacity: .5; }
+.dorder-cust { font-size: 13px; font-weight: 700; color: #1e293b; overflow-wrap: anywhere; }
+.dorder-items { font-size: 12px; color: #64748b; line-height: 1.45; overflow-wrap: anywhere; }
+.dorder-open { grid-column: 2; grid-row: 1 / span 5; align-self: center; white-space: nowrap; }
+
 table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
 .tbl th {
   text-align: left;

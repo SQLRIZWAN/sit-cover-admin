@@ -17,7 +17,7 @@
 
   function avatarHTML(u) {
     if (u.photo) {
-      return '<img src="' + esc(u.photo) + '" alt="" data-fb="' + esc(initial(u)) + '">';
+      return '<img src="' + esc(u.photo) + '" alt="" referrerpolicy="no-referrer" data-fb="' + esc(initial(u)) + '">';
     }
     return '<span class="uc-ph">' + esc(initial(u)) + '</span>';
   }
