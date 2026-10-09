@@ -10,6 +10,7 @@
   var STATUS_LABEL = {
     new: '⏳ Pending',
     confirmed: '✅ Confirmed',
+    shipped: '🚚 Out for delivery',
     delivered: '📦 Completed',
     cancelled: '❌ Cancelled'
   };
@@ -123,7 +124,36 @@
       : '<div class="field"><label>Payment screenshot</label><div class="val muted-v">Not uploaded — ' +
         (o.paymentMethod === 'wamd' ? 'WAMD payment without proof' : 'Cash on Delivery') + '</div></div>';
 
-    el('omBody').innerHTML =
+    var acct = (o.uid || o.email || o.uname)
+      ? '<div class="ord-acct">👤 <b>' + App.esc(o.uname || o.email || 'Signed-in customer') + '</b>' +
+        (o.email && o.uname ? '<span>' + App.esc(o.email) + '</span>' : '') +
+        (o.uid ? '<span class="badge google">Google account</span>' : '') +
+        '</div>'
+      : '<div class="ord-acct">👤 <span class="dl-empty">Placed without an account — order taken before Google sign-in became required.</span></div>';
+
+    var plan =
+      '<div class="dl-plan">' +
+        '<div class="dl-title">🚚 Delivery plan (shown to the customer)</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label for="dlDate">Delivery date</label>' +
+            '<input id="dlDate" type="date" value="' + App.esc(o.deliveryDate || '') + '"></div>' +
+          '<div class="field"><label for="dlTime">Delivery time</label>' +
+            '<input id="dlTime" type="time" value="' + App.esc(o.deliveryTime || '') + '"></div>' +
+        '</div>' +
+        '<div class="field"><label for="dlNote">Message for the customer</label>' +
+          '<input id="dlNote" type="text" maxlength="140" placeholder="e.g. Rider will call before arriving" value="' + App.esc(o.deliveryNote || '') + '"></div>' +
+        '<div class="dl-hint">' + (o.deliveryDate
+          ? 'The customer sees this date, time and message with a live countdown.'
+          : 'Leave the date empty to keep the default promise: delivery within 24 hours.') + '</div>' +
+        '<div class="dl-actions">' +
+          '<button class="btn btn-pri btn-sm" id="dlSave" type="button">💾 Save delivery plan</button>' +
+          ((o.deliveryDate || o.deliveryTime || o.deliveryNote)
+            ? '<button class="btn btn-ghost btn-sm" id="dlClear" type="button">Clear</button>' : '') +
+        '</div>' +
+        '<div class="dl-saved" id="dlSaved" hidden>Saved — the customer sees it right away ✓</div>' +
+      '</div>';
+
+    el('omBody').innerHTML = acct +
       '<div class="row2">' +
         '<div class="field"><label>Placed</label><div class="val">' + App.fmtDate(o.createdAt) + '</div></div>' +
         '<div class="field"><label>Payment</label><div class="val">' +
@@ -151,7 +181,12 @@
           '<span class="badge ' + App.esc(st) + '">' + App.esc(STATUS_LABEL[st] || st) + '</span></div></div>' +
         '<div class="field"><label>WhatsApp hand-off</label><div class="val">' +
           (o.whatsappSent ? '🟢 Sent to shop chat' : '⚪ Not sent yet') + '</div></div>' +
-      '</div>' + shot;
+      '</div>' + plan + shot;
+
+    var dlSave = el('dlSave');
+    if (dlSave) dlSave.addEventListener('click', function () { savePlan(false); });
+    var dlClear = el('dlClear');
+    if (dlClear) dlClear.addEventListener('click', function () { savePlan(true); });
 
     var shopWaText = '';
     try { shopWaText = App.buildWaMessage(o, cfg); } catch (e) {}
@@ -162,7 +197,8 @@
 
     el('omFoot').innerHTML =
       (st === 'new' ? '<button class="btn btn-ghost" data-act="confirmed">✅ Confirm</button>' : '') +
-      (st === 'confirmed' ? '<button class="btn btn-pri" data-act="delivered">📦 Mark Delivered</button>' : '') +
+      (st === 'confirmed' ? '<button class="btn btn-ghost" data-act="shipped">🚚 Out for delivery</button>' : '') +
+      (st === 'shipped' || st === 'confirmed' ? '<button class="btn btn-pri" data-act="delivered">📦 Mark Delivered</button>' : '') +
       (st !== 'cancelled' && st !== 'delivered'
         ? '<button class="btn btn-danger" data-act="cancelled">❌ Cancel order</button>' : '') +
       (st === 'cancelled' || st === 'delivered' ? '<button class="btn btn-ghost" data-act="new">↩ Reopen as new</button>' : '') +
@@ -211,12 +247,48 @@
     openId = null;
   }
 
+  function savePlan(clear) {
+    if (!openId) return;
+    var d = '', t = '', n = '';
+    if (!clear) {
+      d = el('dlDate') ? el('dlDate').value : '';
+      t = el('dlTime') ? el('dlTime').value : '';
+      n = el('dlNote') ? (el('dlNote').value || '').trim() : '';
+    }
+    var patch = {
+      deliveryDate: d || null,
+      deliveryTime: t || null,
+      deliveryNote: n || null,
+      updatedAt: firebase.database.ServerValue.TIMESTAMP
+    };
+    if (clear && el('dlDate')) el('dlDate').value = '';
+    if (clear && el('dlTime')) el('dlTime').value = '';
+    if (clear && el('dlNote')) el('dlNote').value = '';
+
+    App.DB.ref('orders/' + openId).update(patch).then(function () {
+      var saved = el('dlSaved');
+      if (saved) saved.hidden = false;
+      App.toast(clear ? 'Delivery plan cleared ✓' : 'Delivery plan saved ✓', 'ok');
+    }).catch(function (e) {
+      App.toast('Could not save: ' + (e.message || 'try again'), 'err');
+    });
+  }
+
   function setStatus(id, st) {
     if (!id) return;
-    App.DB.ref('orders/' + id).update({
+    var patch = {
       status: st,
       updatedAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(function () {
+    };
+    if (st === 'confirmed') patch.confirmedAt = firebase.database.ServerValue.TIMESTAMP;
+    if (st === 'shipped') patch.shippedAt = firebase.database.ServerValue.TIMESTAMP;
+    if (st === 'delivered') patch.deliveredAt = firebase.database.ServerValue.TIMESTAMP;
+    if (st === 'new') {
+      patch.confirmedAt = null;
+      patch.shippedAt = null;
+      patch.deliveredAt = null;
+    }
+    App.DB.ref('orders/' + id).update(patch).then(function () {
       App.toast('Order → ' + (STATUS_LABEL[st] || st) + ' ✓', 'ok');
       closeModal();
     }).catch(function (e) {

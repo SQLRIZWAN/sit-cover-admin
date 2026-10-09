@@ -1058,3 +1058,150 @@ a.stat.stat-link .ss::after { content: " →"; }
   text-transform: uppercase;
   border-radius: 50%;
 }
+
+/* Order status: out for delivery */
+.badge.shipped { background: #ffedd5; color: #9a3412; }
+
+/* Delivery plan fields inside the order modal */
+.dl-plan {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 13px;
+  margin-top: 4px;
+}
+.dl-plan .dl-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #92400e;
+  margin-bottom: 10px;
+}
+.dl-plan .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dl-plan .field { margin-bottom: 10px; }
+.dl-plan .field:last-child { margin-bottom: 0; }
+.dl-plan label { font-size: 12.5px; font-weight: 700; color: #78350f; }
+.dl-plan input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #fcd34d;
+  border-radius: 9px;
+  background: #fff;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.dl-plan input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+.dl-plan .dl-hint { font-size: 12px; color: #92400e; margin-top: 2px; }
+.dl-actions { display: flex; gap: 9px; margin-top: 12px; }
+.dl-actions .btn { flex: 1; min-height: 44px; }
+.dl-saved { font-size: 12.6px; color: #15803d; font-weight: 700; margin-top: 8px; }
+.dl-empty { font-size: 12.6px; color: var(--muted); font-style: italic; }
+
+/* Buyer account line in the order modal */
+.ord-acct {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 11px;
+  margin-top: 8px;
+}
+.ord-acct b { color: var(--navy); overflow-wrap: anywhere; }
+
+@media (max-width: 560px) {
+  .dl-plan .row2 { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------
+ * Admin login card — dark header band, clear hierarchy
+ * ------------------------------------------------------------------ */
+.login-card { padding: 0; overflow: hidden; }
+.lg-top {
+  background:
+    radial-gradient(120% 100% at 50% -30%, rgba(245, 158, 11, .35), transparent 65%),
+    linear-gradient(160deg, #1e293b, #0f172a);
+  color: #fff;
+  text-align: center;
+  padding: 30px 24px 24px;
+}
+.lg-top .lg {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid rgba(245, 158, 11, .75);
+  box-shadow: 0 18px 36px -18px rgba(245, 158, 11, .9);
+}
+.lg-top h1 { color: #fff; font-size: 20px; margin-top: 14px; letter-spacing: .3px; }
+.lg-top .lsub { color: #cbd5e1; margin-bottom: 0; }
+.lg-shield {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: rgba(245, 158, 11, .16);
+  border: 1px solid rgba(245, 158, 11, .45);
+  color: #fcd34d;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+.lg-shield svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+.lg-body { padding: 22px 24px 6px; }
+.lg-body .lg-chips { margin: 0 0 18px; }
+.login-card .lg-body .field { margin-bottom: 15px; }
+.login-card .lg-body input {
+  width: 100%;
+  min-height: 46px;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  padding: 10px 13px;
+  font-size: 15px;
+  background: #f8fafc;
+}
+.login-card .lg-body input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, .14);
+}
+.login-card .lg-body label { font-size: 13px; font-weight: 800; color: #475569; }
+.pw-wrap input { padding-right: 66px; }
+.lg-go {
+  min-height: 50px;
+  font-size: 15.5px;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+.lg-foot {
+  border-top: 1px solid var(--line);
+  background: #f8fafc;
+  padding: 14px 24px;
+  text-align: center;
+  font-size: 12.3px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.5;
+}
+.lg-foot a { color: var(--info); font-weight: 800; }
+.lg-foot a:hover { text-decoration: underline; }
+
+@media (max-width: 420px) {
+  .login-card { border-radius: 16px; }
+  .lg-top { padding: 24px 18px 20px; }
+  .lg-body { padding: 18px 18px 6px; }
+  .lg-foot { padding: 13px 18px; }
+}

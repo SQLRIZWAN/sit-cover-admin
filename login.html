@@ -6,7 +6,7 @@
   <title>Log in — Sit Cover Admin</title>
   <meta name="robots" content="noindex">
   <link rel="icon" href="assets/shop-logo.webp" type="image/webp">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" media="print" onload="this.media=&#39;all&#39;">
@@ -25,30 +25,44 @@
 
   <div class="login-wrap">
     <div class="login-card">
-      <img class="lg" src="assets/shop-logo.webp" alt="logo">
-      <h1>Admin Panel</h1>
-      <div class="lsub">Fahad Asi Manea Al-Zaferi Co</div>
-      <div class="lg-chips"><i>🛋️ Sit Cover</i><i>🔧 Drill Machine</i><i>📺 TV Remote</i></div>
+      <div class="lg-top">
+        <img class="lg" src="assets/shop-logo.webp" alt="logo">
+        <h1>Admin Panel</h1>
+        <div class="lsub">Fahad Asi Manea Al-Zaferi Co</div>
+        <span class="lg-shield">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l7.5 3v6.1c0 4.6-3.1 8.7-7.5 9.8-4.4-1.1-7.5-5.2-7.5-9.8V5.6z"/><path d="M9 12.2l2.2 2.2L15.4 10"/></svg>
+          Secure staff sign-in
+        </span>
+      </div>
 
-      <div class="login-err" id="bootErr"></div>
-      <div class="login-err" id="lgErr"></div>
+      <div class="lg-body">
+        <div class="lg-chips"><i>🛋️ Sit Cover</i><i>🔧 Drill Machine</i><i>📺 TV Remote</i></div>
 
-      <form id="loginForm" autocomplete="on">
-        <div class="field">
-          <label for="lgEmail">Email</label>
-          <input id="lgEmail" type="email" autocomplete="username" placeholder="admin@example.com" required>
-        </div>
-        <div class="field">
-          <label for="lgPass">Password</label>
-          <div class="pw-wrap">
-            <input id="lgPass" type="password" autocomplete="current-password" placeholder="••••••••" required>
-            <button type="button" class="pw-eye" id="lgEye">SHOW</button>
+        <div class="login-err" id="bootErr"></div>
+        <div class="login-err" id="lgErr"></div>
+
+        <form id="loginForm" autocomplete="on">
+          <div class="field">
+            <label for="lgEmail">Email</label>
+            <input id="lgEmail" type="email" autocomplete="username" placeholder="admin@example.com" required>
           </div>
-        </div>
-        <button class="btn btn-pri btn-block" id="lgBtn" type="submit">Log in</button>
-      </form>
+          <div class="field">
+            <label for="lgPass">Password</label>
+            <div class="pw-wrap">
+              <input id="lgPass" type="password" autocomplete="current-password" placeholder="••••••••" required>
+              <button type="button" class="pw-eye" id="lgEye">SHOW</button>
+            </div>
+          </div>
+          <button class="btn btn-pri btn-block lg-go" id="lgBtn" type="submit">Log in</button>
+        </form>
 
-      <div class="lnk"><button type="button" id="lgForgot">Forgot password?</button></div>
+        <div class="lnk"><button type="button" id="lgForgot">Forgot password?</button></div>
+      </div>
+
+      <div class="lg-foot">
+        <a href="../sit-cover/">← Go to the shop website</a>
+        <span>🔒 Protected by Firebase Authentication · only staff accounts can open this panel</span>
+      </div>
     </div>
   </div>
 
