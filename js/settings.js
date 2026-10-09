@@ -9,6 +9,8 @@
     { maxKm: 30, fee: 3 },
     { maxKm: null, fee: 5 }
   ];
+  var DEFAULT_SEO_DESC = 'Fix and Fit store in Jleeb Al-Shuyoukh, Kuwait (near Makhfar). Car seat covers, Android screen fitting, reverse camera, CCTV installation, drill machines, steering covers, speaker repair, routers & more. Cash on delivery, 24-hour delivery, order online.';
+  var DEFAULT_SEO_KEYS = 'Fix and Fit store Kuwait, car seat cover Kuwait, seat cover Jleeb Al-Shuyoukh, car Android screen installation, reverse camera car Kuwait, CCTV camera installation Kuwait, drill machine Kuwait, car steering cover, car speaker repair, HDMI cable Kuwait, Bluetooth adapter, Wi-Fi router setup Kuwait, TV remote control Kuwait, sit cover, car accessories Jleeb Al-Shuyoukh, makhfar car accessories, electronics repair Kuwait, home delivery Kuwait';
 
   function el(id) { return document.getElementById(id); }
 
@@ -162,6 +164,13 @@
     el('sLat').value = cfg.shopLat != null ? cfg.shopLat : '';
     el('sLng').value = cfg.shopLng != null ? cfg.shopLng : '';
 
+    var seo = cfg.seo || {};
+    el('sSeoBase').value = seo.baseUrl || 'https://fixandfit.store';
+    el('sSeoSuffix').value = seo.titleSuffix || '';
+    el('sSeoDesc').value = seo.description || DEFAULT_SEO_DESC;
+    el('sSeoKeys').value = seo.keywords || DEFAULT_SEO_KEYS;
+    el('sSeoImg').value = seo.ogImage || '';
+
     renderTiers(Array.isArray(cfg.deliveryTiers) && cfg.deliveryTiers.length ? cfg.deliveryTiers : defaultTiers);
 
     readBrand();
@@ -200,6 +209,15 @@
       banner: brand.banner || '',
       loading: brand.loading || '',
       favicon: brand.favicon || ''
+    };
+    var base = el('sSeoBase').value.trim().replace(/\/+$/, '');
+    if (base && !/^https?:\/\//i.test(base)) base = 'https://' + base;
+    data.seo = {
+      baseUrl: base || 'https://fixandfit.store',
+      titleSuffix: el('sSeoSuffix').value.trim(),
+      description: el('sSeoDesc').value.trim(),
+      keywords: el('sSeoKeys').value.trim(),
+      ogImage: el('sSeoImg').value.trim()
     };
     data.updatedAt = firebase.database.ServerValue.TIMESTAMP;
 

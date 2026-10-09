@@ -46,6 +46,7 @@
         <button class="chip" data-tab="contact">💬 Contact &amp; WAMD</button>
         <button class="chip" data-tab="analytics">📈 Analytics</button>
         <button class="chip" data-tab="location">📍 Delivery</button>
+        <button class="chip" data-tab="seo">🔍 SEO &amp; Google</button>
       </div>
 
       <div class="card" data-setting-tab="shop">
@@ -218,6 +219,38 @@
           <button class="btn btn-ghost btn-sm" id="tierAdd" type="button">＋ Add distance step</button>
           <div class="tip">Empty “Up to” row = any farther distance. Leave the last row empty for out-of-range flat fee.</div>
         </div>
+      </div>
+
+      <div class="card" data-setting-tab="seo" hidden>
+        <h3>🔍 SEO &amp; Google ranking</h3>
+        <div class="tip">These settings change the tags Google reads on every page of the website. Save here — no re-upload needed.</div>
+        <div class="row2">
+          <div class="field">
+            <label for="sSeoBase">Website URL (used for Google)</label>
+            <input id="sSeoBase" type="url" maxlength="200" placeholder="https://fixandfit.store">
+            <div class="tip">Must match the domain in GitHub Pages. Leave as-is unless the domain changes.</div>
+          </div>
+          <div class="field">
+            <label for="sSeoSuffix">Title suffix (optional)</label>
+            <input id="sSeoSuffix" type="text" maxlength="80" placeholder="— Jleeb Al-Shuyoukh, Kuwait">
+          </div>
+        </div>
+        <div class="field">
+          <label for="sSeoDesc">Page description (what Google shows under the link)</label>
+          <textarea id="sSeoDesc" rows="3" maxlength="300" placeholder="Fix and Fit store in Jleeb Al-Shuyoukh, Kuwait (near Makhfar). Car seat covers, Android screen fitting, reverse camera, CCTV installation, drill machines and more."></textarea>
+          <div class="tip">Best length: 120–160 characters. Write what you actually sell and where you deliver.</div>
+        </div>
+        <div class="field">
+          <label for="sSeoKeys">Search keywords</label>
+          <textarea id="sSeoKeys" rows="3" maxlength="600" placeholder="car seat cover Kuwait, CCTV installation, drill repair…"></textarea>
+          <div class="tip">Comma-separated words customers type into Google. Mix English and the words Kuwaiti customers actually search.</div>
+        </div>
+        <div class="field">
+          <label for="sSeoImg">Share image URL (optional — shown when your link is shared)</label>
+          <input id="sSeoImg" type="text" maxlength="300" placeholder="assets/shop-banner.webp">
+          <div class="tip">Leave empty to use the shop banner automatically.</div>
+        </div>
+        <div class="tip">After saving, submit <b>https://fixandfit.store/sitemap.xml</b> once in Google Search Console so Google indexes the site faster.</div>
       </div>
 
       <div style="text-align:right;margin-top:18px">
