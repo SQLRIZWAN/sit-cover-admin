@@ -1213,3 +1213,90 @@ a.stat.stat-link .ss::after { content: " →"; }
   .lg-body { padding: 18px 18px 6px; }
   .lg-foot { padding: 13px 18px; }
 }
+
+/* Order card quick actions — call / email / WhatsApp / delete right on the row */
+.oc-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 9px 12px;
+  border-top: 1px dashed #e6ebf2;
+  background: #fafcff;
+  border-radius: 0 0 14px 14px;
+}
+.ocard .oc-acts { margin-top: 9px; }
+.oc-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 99px;
+  border: 1px solid #dbe3ee;
+  background: #fff;
+  color: #334155;
+  font-size: 12.2px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s, transform .14s;
+}
+.oc-act:hover { background: #f1f5fb; border-color: #c7d3e3; color: #0f172a; transform: translateY(-1px); }
+.oc-act.oc-del { border-color: #fecaca; color: #dc2626; background: #fff5f5; }
+.oc-act.oc-del:hover { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+
+/* Full-screen photo viewer (profile DP / payment proof) */
+.img-view {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(6, 10, 20, .94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s;
+}
+.img-view.on { opacity: 1; visibility: visible; }
+.img-view img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .9);
+}
+.img-view-x {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .25);
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer;
+}
+.img-view-x:hover { background: rgba(255, 255, 255, .22); }
+
+/* Avatar becomes a button that opens the full DP */
+.uc-dp { display: block; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 50%; }
+.uc-dp:hover { outline: 3px solid rgba(245, 158, 11, .5); outline-offset: 2px; }
+
+/* Customer report — attached screenshot */
+.rp-shots { margin-top: 9px; }
+.rp-thumb {
+  display: inline-block;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0f172a;
+  cursor: zoom-in;
+  max-width: 210px;
+}
+.rp-thumb img { display: block; width: 100%; max-height: 140px; object-fit: contain; }
+.rp-thumb:hover { border-color: var(--gold); }

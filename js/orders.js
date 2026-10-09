@@ -24,6 +24,55 @@
 
   function shortId(o) { return '#' + String(o.id || '').slice(-8).toUpperCase(); }
 
+  // Customer dialables — Kuwait local numbers become wa.me/965… like the
+  // order modal does, so both paths always agree.
+  function waNum(phone) {
+    var n = String(phone || '').replace(/[^0-9]/g, '');
+    if (!n) return '';
+    if (n[0] === '0') n = '965' + n.slice(1);
+    return n;
+  }
+
+  function quickActions(o) {
+    var cust = o.customer || {};
+    var phone = String(cust.phone || '').replace(/[^\d+]/g, '');
+    var wa = waNum(cust.phone);
+    var mail = String(o.email || cust.email || '').trim();
+    var msg = '';
+    try { msg = App.buildWaMessage(o, App.state.config || {}); } catch (e) {}
+    return '<div class="oc-acts">' +
+      (phone
+        ? '<a class="oc-act" href="tel:' + App.esc(phone) + '" data-stop="1" title="Call customer">📞 Call</a>'
+        : '') +
+      (mail
+        ? '<a class="oc-act" href="mailto:' + App.esc(mail) + '?subject=' +
+            encodeURIComponent('Order ' + shortId(o)) + '" data-stop="1" title="Email customer">✉️ Email</a>'
+        : '') +
+      (wa
+        ? '<a class="oc-act" href="https://wa.me/' + App.esc(wa) +
+            (msg ? '?text=' + encodeURIComponent(msg) : '') +
+            '" target="_blank" rel="noopener" data-stop="1" title="WhatsApp customer">💬 WhatsApp</a>'
+        : '') +
+      '<button type="button" class="oc-act oc-del" data-act="del" data-stop="1" title="Delete this order">🗑 Delete</button>' +
+    '</div>';
+  }
+
+  function deleteOrder(id) {
+    var o = findOrder(id);
+    if (!o) return;
+    var label = shortId(o) + ' — ' + ((o.customer || {}).name || 'customer');
+    if (!confirm('Delete order ' + label + '?\n\nIt is removed from this panel AND from the customer\'s tracker. This cannot be undone.')) return;
+    Promise.all([
+      App.DB.ref('orders/' + id).set(null),
+      App.DB.ref('order_shots/' + id).set(null)
+    ]).then(function () {
+      App.toast('Order deleted ✓', 'ok');
+      if (openId === id) closeModal();
+    }).catch(function (e) {
+      App.toast('Delete failed: ' + e.message, 'err');
+    });
+  }
+
   function itemSummary(o) {
     return (o.items || []).map(function (i) { return i.name + ' ×' + i.qty; }).join(', ');
   }
@@ -80,12 +129,19 @@
             '<button class="btn btn-ghost btn-sm oc-open">View ▸</button>' +
           '</div>' +
         '</div>' +
+        quickActions(o) +
       '</div>';
     }).join('') + '</div>';
 
     $$('.ocard').forEach(function (c) {
       c.addEventListener('click', function () {
         openOrder(c.getAttribute('data-id'));
+      });
+      $$('[data-stop]', c).forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (a.getAttribute('data-act') === 'del') deleteOrder(c.getAttribute('data-id'));
+        });
       });
     });
   }
@@ -331,6 +387,8 @@
         orders.push(v);
       });
       render();
+      // Everything on screen is now "seen", so the sidebar badge empties.
+      if (App.markOrdersSeen) App.markOrdersSeen();
 
       if (!openId) {
         try {

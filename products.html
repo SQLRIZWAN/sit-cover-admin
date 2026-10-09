@@ -83,6 +83,11 @@
             <span id="pfStockTxt" style="font-size:13px;font-weight:700;color:#16a34a">In stock (visible on website)</span>
           </div>
         </div>
+        <div class="field">
+          <label for="pfQty">Stock quantity <span class="opt" style="color:#94a3b8;font-weight:600">optional</span></label>
+          <input id="pfQty" type="number" min="0" step="1" placeholder="Leave empty for unlimited">
+          <div class="tip">Exact number you can supply. The website blocks customers from ordering more than this, and 0 is treated as out of stock.</div>
+        </div>
       </div>
 
       <div class="field">

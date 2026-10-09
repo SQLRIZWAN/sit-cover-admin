@@ -92,6 +92,7 @@
         '<div class="pc-meta">' +
           '<span class="badge cat">' + App.esc(catName(p.categoryId)) + '</span>' +
           '<span class="badge ' + (out ? 'out' : 'stock') + '">' + (out ? 'Out of stock' : 'In stock') + '</span>' +
+          (p.stockQty != null ? '<span class="badge cat">Qty ' + App.esc(String(p.stockQty)) + '</span>' : '') +
           (mediaCount ? '<span class="badge cat">🖼 ' + mediaCount + '</span>' : '') +
         '</div>' +
         '<div class="pc-meta" style="margin-top:4px">' +
@@ -175,6 +176,7 @@
     el('pfDesc').value = p ? (p.description || '') : '';
     el('pfOrder').value = p && p.order != null ? p.order : 0;
     el('pfStock').checked = p ? p.inStock !== false : true;
+    if (el('pfQty')) el('pfQty').value = p && p.stockQty != null && p.stockQty !== '' ? p.stockQty : '';
     updateStockTxt();
     fillCatSelect();
     if (p && p.categoryId) el('pfCat').value = p.categoryId;
@@ -418,7 +420,25 @@
     if (!name) { App.toast('Enter the product name', 'err'); el('pfName').focus(); return; }
     if (!isFinite(price) || price < 0) { App.toast('Enter a valid price in KD', 'err'); el('pfPrice').focus(); return; }
     if (!cat || cat === '__new') { App.toast('Select a category — or finish creating the new one below the list', 'err'); el('pfCat').focus(); return; }
-    if (mediaLoading) { App.toast('Product media is still loading — wait a second', 'err'); return; }
+
+    // Stock quantity is optional: empty means "unlimited". 0 is legal but it
+    // means the item cannot be sold, so the In-stock switch is switched off
+    // with it instead of showing a contradictory pair of values.
+    var pfq = el('pfQty');
+    var rawQty = String(pfq && pfq.value != null ? pfq.value : '').trim();
+    var stockQty = null;
+    if (rawQty !== '') {
+      var nq = Number(rawQty);
+      if (!isFinite(nq) || nq < 0) { App.toast('Stock quantity must be 0 or more', 'err'); if (pfq) pfq.focus(); return; }
+      stockQty = Math.floor(nq);
+    }
+    var inStockOn = el('pfStock').checked;
+    if (stockQty === 0 && inStockOn) {
+      inStockOn = false;
+      el('pfStock').checked = false;
+      updateStockTxt();
+    }
+
 
     var stillUploading = mediaItems.some(function (it) { return it && it.uploading; });
     if (stillUploading) { App.toast('Please wait — a file is still uploading', 'err'); return; }
@@ -482,7 +502,8 @@
         price: Math.round(price * 1000) / 1000,
         categoryId: cat,
         description: el('pfDesc').value.trim(),
-        inStock: el('pfStock').checked,
+        inStock: inStockOn,
+        stockQty: stockQty,
         order: parseInt(el('pfOrder').value, 10) || 0,
         mediaCount: items.length,
         thumb: thumb || '',

@@ -420,6 +420,29 @@
     return 'https://wa.me/' + n + '?text=' + encodeURIComponent(text);
   };
 
+  // Full-screen photo viewer — profile pictures and payment screenshots open
+  // at their real size instead of the tiny thumbnail.
+  var imgView = null;
+  App.viewImage = function (src, alt) {
+    if (!src) { App.toast('No photo to show', 'err'); return; }
+    if (!imgView) {
+      imgView = document.createElement('div');
+      imgView.className = 'img-view';
+      imgView.setAttribute('role', 'dialog');
+      imgView.setAttribute('aria-label', 'Photo viewer');
+      imgView.innerHTML = '<img alt=""><button type="button" class="img-view-x" aria-label="Close photo">&#10005;</button>';
+      imgView.addEventListener('click', function () { imgView.classList.remove('on'); });
+      document.body.appendChild(imgView);
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && imgView.classList.contains('on')) imgView.classList.remove('on');
+      });
+    }
+    var img = imgView.querySelector('img');
+    img.src = src;
+    img.alt = alt || 'Photo';
+    imgView.classList.add('on');
+  };
+
   // Same receipt the website sends, so a forwarded order reads identically.
   App.buildWaMessage = function (o, cfg) {
     cfg = cfg || {};
@@ -571,6 +594,44 @@
     markActive();
   }
 
+  // ---- "Unseen only" nav badges ------------------------------------------
+  // A red pill used to mean "N orders exist" / "N users exist", which never
+  // cleared no matter how many times the page was opened. It now means
+  // "N things you have not opened yet" — the timestamp is written the moment
+  // the matching page loads, so the badge empties itself.
+  var navData = { newOrders: [], users: [] };
+
+  function readTs(k) {
+    try { return Number(localStorage.getItem(k)) || 0; } catch (e) { return 0; }
+  }
+  function writeTs(k, v) {
+    try { localStorage.setItem(k, String(v)); } catch (e) {}
+  }
+
+  function paintNavBadges() {
+    var seenO = readTs('admSeenOrders');
+    var o = navData.newOrders.filter(function (t) { return t > seenO; }).length;
+    var p = $('#navOrdersB');
+    if (p) {
+      p.textContent = o;
+      p.classList.toggle('hide', o === 0);
+      p.title = o ? o + ' new order' + (o === 1 ? '' : 's') + ' you have not opened yet' : 'No unseen orders';
+    }
+
+    var seenU = readTs('admSeenUsers');
+    var u = navData.users.filter(function (t) { return t > seenU; }).length;
+    var q = $('#navUsersB');
+    if (q) {
+      q.textContent = u;
+      q.classList.toggle('hide', u === 0);
+      q.title = u ? u + ' sign-in' + (u === 1 ? '' : 's') + ' you have not opened yet' : 'No unseen sign-ins';
+    }
+  }
+  App.paintNavBadges = paintNavBadges;
+
+  App.markOrdersSeen = function () { writeTs('admSeenOrders', Date.now()); paintNavBadges(); };
+  App.markUsersSeen = function () { writeTs('admSeenUsers', Date.now()); paintNavBadges(); };
+
   function initShell() {
     var side = $('#adminSide');
     if (side) {
@@ -583,6 +644,7 @@
     bindImgFallback();
     markActive();
     pageTitle(navTitle());
+    paintNavBadges();
 
     var mm = $('#mMenu');
     if (mm) mm.addEventListener('click', function () {
@@ -682,27 +744,28 @@
       fire('products', App.state.products);
     });
 
+    // Nav badges are "unseen only": a badge clears itself the moment you open
+    // the matching page, so a red pill never sits there forever.
     DB.ref('orders').orderByChild('status').equalTo('new').on('value', function (s) {
-      var n = s.numChildren();
-      ['#navOrders', '#navOrdersB'].forEach(function (sel) {
-        var p = $(sel);
-        if (p) {
-          p.textContent = n;
-          p.classList.toggle('hide', n === 0);
-        }
+      var ts = [];
+      s.forEach(function (ch) {
+        var v = ch.val() || {};
+        ts.push(Number(v.createdAt) || 0);
       });
+      navData.newOrders = ts;
+      paintNavBadges();
     });
 
-    // Registered website users (Google sign-ins) — shown as a nav badge.
+    // Registered website users (Google sign-ins) — badge counts sign-ins that
+    // happened after the last time the Users page was opened.
     DB.ref('stats/users').on('value', function (s) {
-      var n = s.numChildren();
-      ['#navUsers', '#navUsersB'].forEach(function (sel) {
-        var p = $(sel);
-        if (p) {
-          p.textContent = n;
-          p.classList.toggle('hide', n === 0);
-        }
+      var ts = [];
+      s.forEach(function (ch) {
+        var v = ch.val() || {};
+        ts.push(Number(v.lastLoginAt) || Number(v.createdAt) || 0);
       });
+      navData.users = ts;
+      paintNavBadges();
     });
   }
 

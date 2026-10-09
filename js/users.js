@@ -28,6 +28,14 @@
     return hay.indexOf(query) >= 0;
   }
 
+  // Kuwait local numbers become wa.me/965…, matching the order card.
+  function waFor(phone) {
+    var n = String(phone || '').replace(/[^0-9]/g, '');
+    if (!n) return null;
+    if (n[0] === '0') n = '965' + n.slice(1);
+    return 'https://wa.me/' + n;
+  }
+
   function card(u) {
     var joined = u.createdAt ? App.fmtDate(u.createdAt) : '—';
     var last = u.lastLoginAt ? App.fmtDate(u.lastLoginAt) : '—';
@@ -35,9 +43,16 @@
     if (u.phone) bits.push('📞 ' + esc(u.phone));
     bits.push('🗓️ joined ' + esc(joined));
     bits.push('🔄 last sign-in ' + esc(last));
+    var wa = waFor(u.phone);
 
     return '<div class="ucard">' +
-      '<div class="uc-av">' + avatarHTML(u) + '</div>' +
+      '<div class="uc-av">' +
+        (u.photo
+          ? '<button type="button" class="uc-dp" data-dp="' + esc(u.photo) +
+            '" data-dpname="' + esc(u.name || u.email || 'User') + '" title="View full photo">' +
+            avatarHTML(u) + '</button>'
+          : avatarHTML(u)) +
+      '</div>' +
       '<div class="uc-main">' +
         '<div class="uc-top">' +
           '<b>' + esc(u.name || 'Unnamed user') + '</b>' +
@@ -50,6 +65,9 @@
       '<div class="uc-r">' +
         (u.email ? '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(u.email) + '">Email</a>' : '') +
         (u.phone ? '<a class="btn btn-ghost btn-sm" href="tel:' + esc(String(u.phone).replace(/[^\d+]/g, '')) + '">Call</a>' : '') +
+        (wa ? '<a class="btn btn-ghost btn-sm" href="' + esc(wa) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') +
+        (u.photo ? '<button type="button" class="btn btn-ghost btn-sm" data-dp="' + esc(u.photo) +
+          '" data-dpname="' + esc(u.name || u.email || 'User') + '">View DP</button>' : '') +
       '</div>' +
     '</div>';
   }
@@ -105,6 +123,16 @@
     }
 
     box.innerHTML = '<div class="ulist">' + list.map(card).join('') + '</div>';
+
+    // Full-size profile photo — tap the avatar or the "View DP" button.
+    $$('.ucard').forEach(function (c) {
+      $$('[data-dp]', c).forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          App.viewImage(b.getAttribute('data-dp'), b.getAttribute('data-dpname'));
+        });
+      });
+    });
   }
 
   function snapshotToArray(snap) {
@@ -125,6 +153,9 @@
       loadError = '';
       users = snapshotToArray(s);
       render();
+      // Opened = seen: the Users badge clears and only counts sign-ins that
+      // happen after this page is closed again.
+      if (App.markUsersSeen) App.markUsersSeen();
     }, function (err) {
       loadError = (err && err.message) || 'The database refused this request.';
       render();
