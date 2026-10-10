@@ -142,7 +142,7 @@
           inStock: v,
           updatedAt: firebase.database.ServerValue.TIMESTAMP
         }).then(function () {
-          App.toast(v ? 'Marked IN stock ✓' : 'Marked OUT of stock (hidden action on site)', 'ok');
+          App.toast(v ? 'Visible on the website ✓' : 'Hidden on the website ✓', 'ok');
         }).catch(function (e) {
           st.checked = !v;
           App.toast('Update failed: ' + e.message, 'err');

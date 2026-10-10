@@ -90,6 +90,15 @@
     t.style.color = on ? '#16a34a' : '#dc2626';
   }
 
+  function waAutoTxt() {
+    var on = el('sWaAuto').checked;
+    var t = el('sWaAutoTxt');
+    t.textContent = on
+      ? 'On — WhatsApp opens automatically with photo, screenshot and details'
+      : 'Off — the customer presses the button';
+    t.style.color = on ? '#16a34a' : '#dc2626';
+  }
+
   function visitorTxt() {
     var on = el('sVisitors').checked;
     var t = el('sVisitorsTxt');
@@ -157,6 +166,8 @@
     el('sWamdLink').value = cfg.wamdLink || '';
     el('sWaSubmit').checked = cfg.whatsappSubmitEnabled !== false;
     waSubmitTxt();
+    el('sWaAuto').checked = cfg.whatsappAuto === true;
+    waAutoTxt();
     el('sVisitors').checked = cfg.visitorCountingEnabled === true;
     visitorTxt();
     el('sAddr').value = cfg.address || '';
@@ -198,6 +209,7 @@
     data.wamdName = el('sWamdName').value.trim();
     data.wamdLink = el('sWamdLink').value.trim();
     data.whatsappSubmitEnabled = el('sWaSubmit').checked;
+    data.whatsappAuto = el('sWaAuto').checked;
     data.visitorCountingEnabled = el('sVisitors').checked;
     data.address = el('sAddr').value.trim();
     data.addressAr = el('sAddrAr').value.trim();
@@ -236,6 +248,7 @@
   el('btnSave').addEventListener('click', save);
   el('btnSave2').addEventListener('click', save);
   el('sWaSubmit').addEventListener('change', waSubmitTxt);
+  el('sWaAuto').addEventListener('change', waAutoTxt);
   el('sVisitors').addEventListener('change', visitorTxt);
   $$('#settingsTabs [data-tab]').forEach(function (b) {
     b.addEventListener('click', function () { activateTab(b.getAttribute('data-tab')); });
