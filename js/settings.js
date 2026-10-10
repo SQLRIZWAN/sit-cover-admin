@@ -81,21 +81,12 @@
     });
   }
 
-  function waSubmitTxt() {
-    var on = el('sWaSubmit').checked;
-    var t = el('sWaSubmitTxt');
-    t.textContent = on
-      ? 'Shown — customers can send the order to WhatsApp too'
-      : 'Hidden — orders go to the panel only';
-    t.style.color = on ? '#16a34a' : '#dc2626';
-  }
-
   function waAutoTxt() {
     var on = el('sWaAuto').checked;
     var t = el('sWaAutoTxt');
     t.textContent = on
-      ? 'On — WhatsApp opens automatically with photo, screenshot and details'
-      : 'Off — the customer presses the button';
+      ? 'On — WhatsApp opens by itself with photo, screenshot and full details'
+      : 'Off — orders stay in this panel only';
     t.style.color = on ? '#16a34a' : '#dc2626';
   }
 
@@ -164,8 +155,6 @@
     el('sWamd').value = cfg.wamdNumber || '';
     el('sWamdName').value = cfg.wamdName || '';
     el('sWamdLink').value = cfg.wamdLink || '';
-    el('sWaSubmit').checked = cfg.whatsappSubmitEnabled !== false;
-    waSubmitTxt();
     el('sWaAuto').checked = cfg.whatsappAuto === true;
     waAutoTxt();
     el('sVisitors').checked = cfg.visitorCountingEnabled === true;
@@ -208,7 +197,6 @@
     data.wamdNumber = el('sWamd').value.trim();
     data.wamdName = el('sWamdName').value.trim();
     data.wamdLink = el('sWamdLink').value.trim();
-    data.whatsappSubmitEnabled = el('sWaSubmit').checked;
     data.whatsappAuto = el('sWaAuto').checked;
     data.visitorCountingEnabled = el('sVisitors').checked;
     data.address = el('sAddr').value.trim();
@@ -247,7 +235,6 @@
 
   el('btnSave').addEventListener('click', save);
   el('btnSave2').addEventListener('click', save);
-  el('sWaSubmit').addEventListener('change', waSubmitTxt);
   el('sWaAuto').addEventListener('change', waAutoTxt);
   el('sVisitors').addEventListener('change', visitorTxt);
   $$('#settingsTabs [data-tab]').forEach(function (b) {

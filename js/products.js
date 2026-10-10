@@ -79,16 +79,20 @@
     var thumb = p.thumb || (m ? App.mediaThumb(m, 500) : '');
     var isVideo = p.videoFirst === true || (m && m.type === 'video');
     var out = p.inStock === false;
+    var d = App.discountOf ? App.discountOf(p) : null;
     var mediaCount = p.mediaCount != null ? p.mediaCount : ((p.media || []).length);
 
     return '<div class="pcard" data-id="' + App.esc(p.id) + '">' +
       '<div class="pc-img">' +
         (thumb ? '<img src="' + App.esc(thumb) + '" alt="" loading="lazy">' : '<div class="ph">🛍️</div>') +
         (isVideo ? '<span class="pc-vid">▶ VIDEO</span>' : '') +
+        (d ? '<span class="pc-off">-' + d.pct + '%</span>' : '') +
       '</div>' +
       '<div class="pc-b">' +
         '<div class="pc-n">' + App.esc(p.name) + '</div>' +
-        '<div class="pc-p">' + App.fmtKD(p.price) + '</div>' +
+        '<div class="pc-p">' + (d
+          ? '<s class="pc-was">' + App.fmtKD(d.was) + '</s>' + App.fmtKD(p.price)
+          : App.fmtKD(p.price)) + '</div>' +
         '<div class="pc-meta">' +
           '<span class="badge cat">' + App.esc(catName(p.categoryId)) + '</span>' +
           '<span class="badge ' + (out ? 'out' : 'stock') + '">' + (out ? 'Out of stock' : 'In stock') + '</span>' +
@@ -173,6 +177,7 @@
     el('mTitle').textContent = p ? 'Edit Product' : 'Add Product';
     el('pfName').value = p ? (p.name || '') : '';
     el('pfPrice').value = p ? (p.price != null ? p.price : '') : '';
+    if (el('pfWas')) el('pfWas').value = p && p.wasPrice != null && p.wasPrice !== '' ? p.wasPrice : '';
     el('pfDesc').value = p ? (p.description || '') : '';
     el('pfOrder').value = p && p.order != null ? p.order : 0;
     el('pfStock').checked = p ? p.inStock !== false : true;
@@ -424,6 +429,17 @@
     // Stock quantity is optional: empty means "unlimited". 0 is legal but it
     // means the item cannot be sold, so the In-stock switch is switched off
     // with it instead of showing a contradictory pair of values.
+    var pfw = el('pfWas');
+    var rawWas = String(pfw && pfw.value != null ? pfw.value : '').trim();
+    var wasPrice = null;
+    if (rawWas !== '') {
+      var nw = Number(rawWas);
+      if (!isFinite(nw) || nw < 0) { App.toast('Original price must be 0 or more', 'err'); if (pfw) pfw.focus(); return; }
+      if (nw > 0 && nw < price) { App.toast('Original price must be HIGHER than the sale price', 'err'); if (pfw) pfw.focus(); return; }
+      if (nw > 0 && nw === price) { wasPrice = null; }
+      else { wasPrice = Math.round(nw * 1000) / 1000; }
+    }
+
     var pfq = el('pfQty');
     var rawQty = String(pfq && pfq.value != null ? pfq.value : '').trim();
     var stockQty = null;
@@ -500,6 +516,7 @@
       var data = {
         name: name,
         price: Math.round(price * 1000) / 1000,
+        wasPrice: wasPrice,
         categoryId: cat,
         description: el('pfDesc').value.trim(),
         inStock: inStockOn,

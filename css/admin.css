@@ -318,6 +318,19 @@ body > .main { margin-left: var(--side-w); min-height: 100vh; display: flex; fle
 .pcard .pc-b { padding: 10px 11px 11px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
 .pcard .pc-n { font-weight: 800; color: var(--navy); font-size: 13.5px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .pcard .pc-p { font-weight: 900; color: var(--gold-d); font-size: 15px; }
+.pcard .pc-was { font-size: 12px; font-weight: 700; color: #9ca3af; text-decoration: line-through; margin-right: 5px; }
+.pcard .pc-off {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 99px;
+  z-index: 2;
+}
 .pcard .pc-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .pcard .pc-act { display: flex; gap: 6px; margin-top: auto; padding-top: 5px; }
 .pcard .pc-act .btn { flex: 1; }

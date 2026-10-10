@@ -28,6 +28,18 @@
     return v.toFixed(3) + ' KD';
   };
 
+  // Same rule as the website: the shop stores only the ORIGINAL price, and the
+  // percentage is derived from the two numbers so they can never disagree.
+  App.discountOf = function (p) {
+    if (!p) return null;
+    var now = Number(p.price);
+    var was = Number(p.wasPrice);
+    if (!isFinite(now) || !isFinite(was) || now <= 0 || was <= now) return null;
+    var pct = Math.round((1 - now / was) * 100);
+    if (pct < 1) return null;
+    return { was: was, now: now, pct: pct };
+  };
+
   App.pad = function (n) { return n < 10 ? '0' + n : '' + n; };
 
   App.todayKey = function () {
