@@ -388,7 +388,7 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
 .icbtn.danger { background: #fee2e2; }
 .icbtn.danger:hover { background: #fecaca; }
 
-.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chips, .ochips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
 .chip {
   padding: 8px 15px;
   border-radius: 99px;
@@ -531,7 +531,7 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
 .lnk button:hover { text-decoration: underline; }
 
 .tier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.tier {
+.tier-grid .tier {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -540,8 +540,8 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 620px; }
   border-radius: 11px;
   padding: 9px 12px;
 }
-.tier span { font-size: 12.5px; font-weight: 700; color: var(--muted); flex: 1; }
-.tier input { width: 84px; padding: 7px 9px; border: 1.5px solid var(--line); border-radius: 9px; font-size: 13.5px; text-align: center; }
+.tier-grid .tier span { font-size: 12.5px; font-weight: 700; color: var(--muted); flex: 1; }
+.tier-grid .tier input { width: 84px; padding: 7px 9px; border: 1.5px solid var(--line); border-radius: 9px; font-size: 13.5px; text-align: center; }
 
 .saved-bar {
   position: sticky;

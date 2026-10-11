@@ -623,21 +623,21 @@
   function paintNavBadges() {
     var seenO = readTs('admSeenOrders');
     var o = navData.newOrders.filter(function (t) { return t > seenO; }).length;
-    var p = $('#navOrdersB');
-    if (p) {
+    [$('#navOrdersB'), $('#navOrders')].forEach(function (p) {
+      if (!p) return;
       p.textContent = o;
       p.classList.toggle('hide', o === 0);
       p.title = o ? o + ' new order' + (o === 1 ? '' : 's') + ' you have not opened yet' : 'No unseen orders';
-    }
+    });
 
     var seenU = readTs('admSeenUsers');
     var u = navData.users.filter(function (t) { return t > seenU; }).length;
-    var q = $('#navUsersB');
-    if (q) {
+    [$('#navUsersB'), $('#navUsers')].forEach(function (q) {
+      if (!q) return;
       q.textContent = u;
       q.classList.toggle('hide', u === 0);
       q.title = u ? u + ' sign-in' + (u === 1 ? '' : 's') + ' you have not opened yet' : 'No unseen sign-ins';
-    }
+    });
   }
   App.paintNavBadges = paintNavBadges;
 

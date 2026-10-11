@@ -90,7 +90,7 @@
 
     if (!list.length) {
       el('oList').innerHTML = '<div class="empty-box"><div class="big">🧾</div><b>No ' +
-        (filter === 'all' ? '' : STATUS_LABEL[filter] || filter + ' ') + 'orders</b>' +
+        (filter === 'all' ? '' : (STATUS_LABEL[filter] || filter) + ' ') + 'orders</b>' +
         'New website orders appear here instantly.<div style="margin-top:14px">' +
         '<a class="btn btn-ghost" href="index.html">← Back to dashboard</a></div></div>';
       return;
@@ -183,7 +183,8 @@
     var acct = (o.uid || o.email || o.uname)
       ? '<div class="ord-acct">👤 <b>' + App.esc(o.uname || o.email || 'Signed-in customer') + '</b>' +
         (o.email && o.uname ? '<span>' + App.esc(o.email) + '</span>' : '') +
-        (o.uid ? '<span class="badge google">Google account</span>' : '') +
+        (o.uid ? '<span class="badge google">Google · ' + App.esc(String(o.uid).slice(0, 10)) + '…</span>' : '') +
+        (o.fid && o.fid !== o.uid ? '<span class="badge">Device · ' + App.esc(String(o.fid).slice(0, 10)) + '…</span>' : '') +
         '</div>'
       : '<div class="ord-acct">👤 <span class="dl-empty">Placed without an account — order taken before Google sign-in became required.</span></div>';
 
@@ -266,6 +267,16 @@
       b.addEventListener('click', function () {
         var act = b.getAttribute('data-act');
         if (act === 'close') { closeModal(); return; }
+        // Destructive / hard-to-reverse status jumps get a confirmation so a
+        // stray tap never cancels a live order or wipes the delivery plan.
+        if (act === 'cancelled' || act === 'delivered' || act === 'new') {
+          var words = {
+            cancelled: 'Cancel this order? The customer will see it as cancelled.',
+            delivered: 'Mark this order as delivered/completed?',
+            new: 'Reopen this order as new? The delivery plan will be cleared.'
+          };
+          if (!window.confirm(words[act] || 'Change this order status?')) return;
+        }
         setStatus(openId, act);
       });
     });
