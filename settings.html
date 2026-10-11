@@ -47,6 +47,7 @@
         <button class="chip" data-tab="analytics">📈 Analytics</button>
         <button class="chip" data-tab="location">📍 Delivery</button>
         <button class="chip" data-tab="seo">🔍 SEO &amp; Google</button>
+        <button class="chip" data-tab="danger" id="tabDanger">⚠️ Danger</button>
       </div>
 
       <div class="card" data-setting-tab="shop">
@@ -256,6 +257,21 @@
 
       <div style="text-align:right;margin-top:18px">
         <button class="btn btn-pri" id="btnSave2">💾 Save All Settings</button>
+      </div>
+    </div>
+
+    <div class="card danger-zone" data-setting-tab="danger" id="dangerZone" hidden>
+      <h3>⚠️ Danger zone — testing only</h3>
+      <div class="dz-warn">
+        <b>Website ready hone ke baad sab values 0 karke is button ka use karein.</b><br>
+        Abhi testing me jo fake orders / revenue / visitors jama hue hain unhe yahan se ek click me zero kar sakte hain.
+        Orders, users aur products DELETE nahi hote — sirf counters reset hote hain.
+        Reset ke baad neeche wale <b>Kill Buttons</b> se ye dono buttons hamesha ke liye gayab ho jayenge (sirf is browser me).
+        Site live karne se pehle code se bhi hata dena.
+      </div>
+      <div class="dz-row">
+        <button type="button" class="btn btn-danger-solid" id="btnResetAll">🔄 Reset All Stats (password protected)</button>
+        <button type="button" class="btn btn-kill" id="btnKillZone">💀 Kill Buttons — hide forever</button>
       </div>
     </div>
   </div>

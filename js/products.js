@@ -133,6 +133,7 @@
         del['products/' + id] = null;
         del['media/' + id] = null;
         App.DB.ref().update(del).then(function () {
+          if (App.logAction) App.logAction('product-delete', p.name || id);
           App.toast('Product deleted ✓', 'ok');
         }).catch(function (e) {
           App.toast('Delete failed: ' + e.message, 'err');
@@ -557,7 +558,9 @@
       var done = function () {
         btn.disabled = false;
         btn.textContent = '✅ Submit Product';
+        var wasEdit = !!editingId;
         closeModal();
+        if (App.logAction) App.logAction(wasEdit ? 'product-edit' : 'product-add', name);
         App.toast('Product saved — live on website ✓', 'ok');
       };
       var failed = function (e) {

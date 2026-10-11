@@ -39,7 +39,12 @@
 
     box.querySelectorAll('[data-id]').forEach(function (b) {
       b.addEventListener('click', function () {
-        App.DB.ref('reports/' + b.getAttribute('data-id')).update({ status: 'resolved' });
+        var rid = b.getAttribute('data-id');
+        if (!confirm('Mark this customer report as resolved?')) return;
+        App.DB.ref('reports/' + rid).update({ status: 'resolved' }).then(function () {
+          if (App.logAction) App.logAction('report-resolve', 'Report ' + String(rid || '').slice(-8) + ' marked resolved');
+          App.toast('Report marked resolved ✓', 'ok');
+        });
       });
     });
     // Screenshot opens full size instead of being squeezed into the card.

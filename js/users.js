@@ -28,12 +28,13 @@
     return hay.indexOf(query) >= 0;
   }
 
-  // Kuwait local numbers become wa.me/965…, matching the order card.
+  // Kuwait local numbers go through App.waLink so phones open the installed
+  // WhatsApp app directly instead of the web "Open app" page.
   function waFor(phone) {
     var n = String(phone || '').replace(/[^0-9]/g, '');
     if (!n) return null;
     if (n[0] === '0') n = '965' + n.slice(1);
-    return 'https://wa.me/' + n;
+    return App.waLink ? App.waLink(n, '') : 'https://wa.me/' + n;
   }
 
   // WhatsApp is offered only when the customer has saved their own number —
@@ -43,17 +44,10 @@
   }
 
   function card(u) {
-    var joined = u.createdAt ? App.fmtDate(u.createdAt) : '—';
     var last = u.lastLoginAt ? App.fmtDate(u.lastLoginAt) : '—';
-    var bits = [];
-    if (u.phone) bits.push('📞 ' + esc(u.phone));
-    else bits.push('📞 no phone saved');
-    bits.push('🗓️ joined ' + esc(joined));
-    bits.push('🔄 last sign-in ' + esc(last));
-    var wa = waFor(u.phone) || shopWa();
     var uid = esc(u.uid || u.email || u.name || '');
 
-    return '<div class="ucard" data-uid="' + esc(u.uid || '') + '" data-email="' + esc(u.email || '') + '">' +
+    return '<div class="ucard ucard-mini" data-uid="' + esc(u.uid || '') + '" data-email="' + esc(u.email || '') + '">' +
       '<div class="uc-av">' +
         (u.photo
           ? '<button type="button" class="uc-dp" data-dp="' + esc(u.photo) +
@@ -66,17 +60,12 @@
           '<b>' + esc(u.name || 'Unnamed user') + '</b>' +
           '<span class="badge google">Google</span>' +
         '</div>' +
-        '<div class="uc-mail"><a href="mailto:' + esc(u.email) + '">' + esc(u.email || 'no email') + '</a></div>' +
-        '<div class="uc-meta">' + bits.join('<span class="dot">•</span>') + '</div>' +
-        (u.info ? '<div class="uc-info">' + esc(u.info) + '</div>' : '') +
+        '<div class="uc-mail">' + esc(u.email || 'no email') + '</div>' +
+        '<div class="uc-meta">📞 ' + esc(u.phone || 'no phone') +
+          '<span class="dot">•</span>🔄 ' + esc(last) + '</div>' +
       '</div>' +
       '<div class="uc-r">' +
-        (u.email ? '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(u.email) + '">Email</a>' : '') +
-        (u.phone ? '<a class="btn btn-ghost btn-sm" href="tel:' + esc(String(u.phone).replace(/[^\d+]/g, '')) + '">Call</a>' : '') +
-        (wa ? '<a class="btn btn-ghost btn-sm" href="' + esc(wa) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') +
-        (u.photo ? '<button type="button" class="btn btn-ghost btn-sm" data-dp="' + esc(u.photo) +
-          '" data-dpname="' + esc(u.name || u.email || 'User') + '">View DP</button>' : '') +
-        '<button type="button" class="btn btn-pri btn-sm" data-detail="' + esc(uid) + '">Full details</button>' +
+        '<button type="button" class="btn btn-pri btn-sm" data-detail="' + esc(uid) + '">View</button>' +
       '</div>' +
     '</div>';
   }
@@ -265,6 +254,18 @@
         '<div class="ustat"><b>' + delivered + '</b><span>Delivered</span></div>' +
         '<div class="ustat"><b>' + App.fmtKD(spent) + '</b><span>Total spent</span></div>' +
       '</div>';
+
+      html += '<div class="ustat-sec"><h4>Order history</h4>';
+      if (!orders.length) html += '<div class="ustat-empty">No orders yet.</div>';
+      else html += orders.slice(0, 12).map(function (o) {
+        var st = App.orderStatus(o);
+        var itemsN = (o.items || []).length;
+        return '<a class="ustat-row ustat-order" href="orders.html?o=' + encodeURIComponent(o.id || '') + '">' +
+          '<span>#' + esc(String(o.id || '').slice(-8).toUpperCase()) +
+            ' <i class="ustat-st ' + App.esc(st) + '">' + esc(st) + '</i></span>' +
+          '<b>' + App.fmtKD(o.total) + ' · ' + esc(App.fmtDate(o.createdAt)) + '</b></a>';
+      }).join('');
+      html += '</div>';
 
       html += '<div class="ustat-sec"><h4>Products bought (all time)</h4>';
       if (!prods.length) html += '<div class="ustat-empty">Nothing purchased yet.</div>';

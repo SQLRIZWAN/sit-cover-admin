@@ -66,6 +66,7 @@
       App.DB.ref('orders/' + id).set(null),
       App.DB.ref('order_shots/' + id).set(null)
     ]).then(function () {
+      if (App.logAction) App.logAction('order-delete', label);
       App.toast('Order deleted ✓', 'ok');
       if (openId === id) closeModal();
     }).catch(function (e) {
@@ -335,6 +336,8 @@
     App.DB.ref('orders/' + openId).update(patch).then(function () {
       var saved = el('dlSaved');
       if (saved) saved.hidden = false;
+      var ord = findOrder(openId);
+      if (App.logAction) App.logAction('order-delivery', shortId(ord || { id: openId }) + (clear ? ' — plan cleared' : ' — plan set for ' + (d || 'TBD')));
       App.toast(clear ? 'Delivery plan cleared ✓' : 'Delivery plan saved ✓', 'ok');
     }).catch(function (e) {
       App.toast('Could not save: ' + (e.message || 'try again'), 'err');
@@ -356,6 +359,8 @@
       patch.deliveredAt = null;
     }
     App.DB.ref('orders/' + id).update(patch).then(function () {
+      var ord = findOrder(id);
+      if (App.logAction) App.logAction('order-status', shortId(ord || { id: id }) + ' → ' + (STATUS_LABEL[st] || st));
       App.toast('Order → ' + (STATUS_LABEL[st] || st) + ' ✓', 'ok');
       closeModal();
     }).catch(function (e) {

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1, interactive-widget=resizes-content">
+  <title>Admin Log — Sit Cover Admin</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/shop-logo.webp" type="image/webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" media="print" onload="this.media=&#39;all&#39;">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"></noscript>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-nav="admin-logs">
+  <div id="preloader">
+    <div class="pre-card">
+      <img src="assets/shop-logo.webp" alt="logo">
+      <div class="pre-name">Sit Cover Admin</div>
+      <div class="pre-sub">Admin Log</div>
+      <div class="pre-bar"><i></i></div>
+    </div>
+  </div>
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <header class="top" id="adminTop"></header>
+    <div class="wrap-a">
+      <div class="login-err" id="bootErr"></div>
+      <div class="page-head">
+        <div>
+          <h2>📜 Admin Log</h2>
+          <div class="sub">Har admin action — date, time aur kisne kiya</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row2">
+          <div class="field">
+            <label for="logSearch">Search</label>
+            <input id="logSearch" type="search" placeholder="action, email ya detail…">
+          </div>
+          <div class="field">
+            <label for="logLimit">Show last</label>
+            <select id="logLimit">
+              <option value="50">50 entries</option>
+              <option value="100" selected>100 entries</option>
+              <option value="200">200 entries</option>
+              <option value="500">500 entries</option>
+            </select>
+          </div>
+        </div>
+        <div class="tip">Login, logout, order changes, product edits, settings saves aur resets — sab yahan stamp hote hain.</div>
+      </div>
+      <div id="logList"><div class="empty-box"><b>Loading admin log…</b></div></div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/logs.js"></script>
+</body>
+</html>

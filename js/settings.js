@@ -226,6 +226,7 @@
 
     App.DB.ref('config').update(data).then(function () {
       btns.forEach(function (b) { b.disabled = false; b.textContent = '💾 Save All Settings'; });
+      if (App.logAction) App.logAction('settings-save', 'Updated shop settings');
       App.toast('Settings saved — website updated live ✓', 'ok');
     }).catch(function (e) {
       btns.forEach(function (b) { b.disabled = false; b.textContent = '💾 Save All Settings'; });
@@ -240,6 +241,66 @@
   $$('#settingsTabs [data-tab]').forEach(function (b) {
     b.addEventListener('click', function () { activateTab(b.getAttribute('data-tab')); });
   });
+
+  /* ------------------------------------------------------------------ *
+   * Danger zone — temporary launch tools.
+   * Reset All zeros the fake testing stats once the site is ready.
+   * Kill Buttons hides this whole zone forever on this browser so the
+   * panel looks clean; remove the code before going fully live.
+   * ------------------------------------------------------------------ */
+  var RESET_PASSWORD = 'SQLRIZWAN';
+  var KILL_KEY = 'admDangerKilled';
+
+  function zoneKilled() {
+    try { return localStorage.getItem(KILL_KEY) === '1'; } catch (e) { return false; }
+  }
+
+  function hideZone(silent) {
+    try { localStorage.setItem(KILL_KEY, '1'); } catch (e) {}
+    var z = el('dangerZone');
+    if (z) z.hidden = true;
+    var tab = el('tabDanger');
+    if (tab) tab.style.display = 'none';
+    // If the user was sitting on the Danger tab, jump back to Shop.
+    var on = document.querySelector('#settingsTabs .chip.on[data-tab="danger"]');
+    if (on) activateTab('shop');
+    if (!silent) {
+      App.toast('Reset buttons hidden forever on this browser. Remove the Danger tab from settings.html + settings.js when the site is live.', 'ok');
+    }
+  }
+
+  function resetAllStats() {
+    var pw = prompt('Enter the reset password to zero all-time sales, revenue, daily stats and visitors:');
+    if (pw === null) return;
+    if (pw !== RESET_PASSWORD) {
+      App.toast('Wrong password — nothing was changed', 'err');
+      return;
+    }
+    if (!confirm('Zero ALL-TIME sales, revenue, daily stats and visitor count?\n\nOrders, users and products are NOT deleted.')) return;
+    if (!App.DB) { App.toast('Still connecting — try again in a second', 'err'); return; }
+    Promise.all([
+      App.DB.ref('stats/allTime').set({ orders: 0, revenue: 0 }),
+      App.DB.ref('stats/daily').set(null),
+      App.DB.ref('stats/visitors').set(null)
+    ]).then(function () {
+      if (App.logAction) App.logAction('reset-all', 'Zeroed all-time sales, revenue, daily stats and visitors');
+      App.toast('All stats reset to 0 ✓', 'ok');
+    }).catch(function (e) {
+      App.toast('Reset failed: ' + (e && e.message ? e.message : 'try again'), 'err');
+    });
+  }
+
+  var btnReset = el('btnResetAll');
+  if (btnReset) btnReset.addEventListener('click', resetAllStats);
+  var btnKill = el('btnKillZone');
+  if (btnKill) btnKill.addEventListener('click', function () {
+    if (!confirm('Hide the Reset All + Kill Buttons forever on this browser?\n\nYou can still remove them from the code later.')) return;
+    if (App.logAction) App.logAction('kill-zone', 'Hid the Danger zone buttons on this browser');
+    hideZone(false);
+  });
+
+  // On load: if this browser already killed the zone, keep it hidden.
+  if (zoneKilled()) hideZone(true);
 
   $$('.brand-slot [data-pick]').forEach(function (b) {
     b.addEventListener('click', function () {

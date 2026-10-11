@@ -101,6 +101,7 @@
           if (pc) msg += '\n\n' + pc + ' product(s) use it — they will stay in the shop and show on the Home tab (uncategorized).';
           if (!confirm(msg)) return;
           App.DB.ref('categories/' + id).remove().then(function () {
+            if (App.logAction) App.logAction('category-delete', list[idx].name || id);
             App.toast('Category deleted ✓', 'ok');
           }).catch(function (err) {
             App.toast('Delete failed: ' + err.message, 'err');
@@ -270,6 +271,7 @@
       btn.disabled = false;
       btn.textContent = '💾 Save Category';
       closeModal();
+      if (App.logAction) App.logAction(editingId ? 'category-edit' : 'category-add', name);
       App.toast('Category saved — website tab updated ✓', 'ok');
     };
     var bad = function (e) {
